@@ -27,10 +27,10 @@
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
 		"editorconfig.editorconfig",
-		"matklad.rust-analyzer",
 		"mutantdino.resourcemonitor",
-		"tamasfe.even-better-toml",
+		"rust-lang.rust-analyzer",
 		"serayuzgur.crates",
+		"tamasfe.even-better-toml",
 		"vadimcn.vscode-lldb"
 	],
 
