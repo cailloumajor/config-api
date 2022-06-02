@@ -32,7 +32,8 @@ expression: pretty_json
   ],
   "floats": [
     1.42,
-    0.01
+    0.01,
+    null
   ],
   "integers": [
     42,
