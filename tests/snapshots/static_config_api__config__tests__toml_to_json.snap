@@ -1,0 +1,63 @@
+---
+source: src/config.rs
+expression: pretty_json
+---
+{
+  "characters": {
+    "star-trek": [
+      {
+        "name": "James Kirk",
+        "rank": "Captain"
+      },
+      {
+        "name": "Spock",
+        "rank": "Science officer"
+      }
+    ]
+  },
+  "desc": "An example TOML document. ",
+  "distros": [
+    {
+      "name": "Arch Linux",
+      "packages": "pacman"
+    },
+    {
+      "name": "Void Linux",
+      "packages": "xbps"
+    },
+    {
+      "name": "Debian",
+      "packages": "apt"
+    }
+  ],
+  "floats": [
+    1.42,
+    0.01
+  ],
+  "integers": [
+    42,
+    66,
+    34,
+    6
+  ],
+  "servers": {
+    "alpha": {
+      "enabled": false,
+      "hostname": "server1",
+      "ip": "10.0.0.1"
+    },
+    "beta": {
+      "enabled": true,
+      "hostname": "server2",
+      "ip": "10.0.0.2"
+    }
+  },
+  "times": [
+    "2021-11-09T15:16:17+01:00",
+    "2021-11-09T15:16:17Z",
+    "2021-11-09T15:16:17",
+    "2021-11-09",
+    "15:16:17"
+  ],
+  "title": "TOML example 😊"
+}
