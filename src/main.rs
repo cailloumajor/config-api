@@ -26,7 +26,7 @@ async fn main() -> anyhow::Result<()> {
     let mut app = tide::with_state(AppState {
         toml_value: Arc::new(RwLock::new(
             // TODO: implement real-world
-            toml::from_str(include_str!("../tests/test.toml")).unwrap(),
+            toml::from_str("[main]\nwip_data = true").unwrap(),
         )),
     });
     app.at("/config/*path").get(config_handler);
