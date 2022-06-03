@@ -30,6 +30,7 @@ async fn main() -> anyhow::Result<()> {
         )),
     });
     app.at("/config/*path").get(config_handler);
+    eprintln!(r#"listen="{}" msg="start listening""#, args.listen_address);
     app.listen(args.listen_address)
         .await
         .context("listen error")?;
