@@ -16,7 +16,7 @@ use signal_hook_async_std::Signals;
 #[clap(about)]
 struct Args {
     /// Address to listen on
-    #[clap(long, default_value = "0.0.0.0:8080")]
+    #[clap(env, long, default_value = "0.0.0.0:8080")]
     listen_address: String,
 }
 

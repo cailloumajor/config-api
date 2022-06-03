@@ -15,6 +15,9 @@ USAGE:
     static_config_api [OPTIONS]
 
 OPTIONS:
-    -h, --help                               Print help information
-        --listen-address <LISTEN_ADDRESS>    Address to listen on [default: 0.0.0.0:8080]
+    -h, --help
+            Print help information
+
+        --listen-address <LISTEN_ADDRESS>
+            Address to listen on [env: LISTEN_ADDRESS=] [default: 0.0.0.0:8080]
 ```
