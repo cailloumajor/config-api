@@ -12,7 +12,8 @@ use signal_hook::low_level::signal_name;
 use signal_hook_async_std::Signals;
 
 #[derive(Parser)]
-#[clap(version, about)]
+#[clap(name = "Static configuration API")]
+#[clap(about)]
 struct Args {
     /// Address to listen on
     #[clap(long, default_value = "0.0.0.0:8080")]
