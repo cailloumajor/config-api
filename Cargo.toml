@@ -1,6 +1,7 @@
 [package]
 name = "static-config-api"
 version = "0.1.0"
+description = "Reads a TOML configuration file and serves it as JSON."
 authors = [ "Arnaud Rocher <arnaud.roche3@gmail.com>" ]
 edition = "2021"
 
@@ -9,6 +10,7 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.57"
 async-std = { version = "1.11.0", features = [ "attributes" ] }
+clap = { version = "3.1.18", features = [ "derive" ] }
 serde = { version = "1.0.137", features = [ "derive" ] }
 serde_json = "1.0.81"
 tide = "0.16.0"
