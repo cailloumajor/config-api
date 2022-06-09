@@ -1742,6 +1742,7 @@ dependencies = [
  "signal-hook",
  "signal-hook-async-std",
  "surf",
+ "tempfile",
  "test-case",
  "tide",
  "tide-testing",
