@@ -5,7 +5,7 @@ use clap::Parser;
 
 mod config;
 
-use config::handler as config_handler;
+use config::{handler as config_handler, load_config};
 use futures::future::{AbortHandle, Abortable, Aborted};
 use signal_hook::consts::TERM_SIGNALS;
 use signal_hook::low_level::signal_name;
@@ -18,6 +18,10 @@ struct Args {
     /// Address to listen on
     #[clap(env, long, default_value = "0.0.0.0:8080")]
     listen_address: String,
+
+    /// Path of the static configuration TOML file
+    #[clap(env, long)]
+    config_path: String,
 }
 
 #[derive(Clone)]
@@ -43,10 +47,7 @@ async fn main() -> anyhow::Result<()> {
     let signal_task = async_std::task::spawn(handle_signals(signals, abort_handle));
 
     let mut app = tide::with_state(AppState {
-        toml_value: Arc::new(RwLock::new(
-            // TODO: implement real-world
-            toml::from_str("[main]\nwip_data = true").unwrap(),
-        )),
+        toml_value: Arc::new(RwLock::new(load_config(&args.config_path).await?)),
     });
     app.at("/config/*path").get(config_handler);
     eprintln!(r#"listen="{}" msg="start listening""#, args.listen_address);

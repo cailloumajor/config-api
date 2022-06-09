@@ -1,3 +1,5 @@
+use anyhow::{ensure, Context};
+use async_std::fs;
 use serde_json::Value as JSONValue;
 use tide::{Request, Response, StatusCode};
 use toml::Value as TOMLValue;
@@ -40,6 +42,14 @@ fn toml_to_json(toml_value: &TOMLValue) -> JSONValue {
     }
 }
 
+pub async fn load_config(path: &str) -> anyhow::Result<TOMLValue> {
+    let content = fs::read_to_string(path)
+        .await
+        .context("error reading configuration file")?;
+    ensure!(!content.is_empty(), "configuration file is empty");
+    Ok(content.parse()?)
+}
+
 pub async fn handler(req: Request<AppState>) -> tide::Result {
     let mut subset = &req.state().toml_value.read().await.clone();
     let path = req.param("path").unwrap();
@@ -59,14 +69,23 @@ pub async fn handler(req: Request<AppState>) -> tide::Result {
 #[cfg(test)]
 mod tests {
     use async_std::sync::{Arc, RwLock};
+    use std::io::Write;
     use std::path::Path;
+    use tempfile::NamedTempFile;
     use test_case::test_case;
     use tide::http::mime;
     use tide_testing::TideTestingExt;
 
     use crate::AppState;
 
-    const SNAPSHOTS_DIR: &str = "../tests/snapshots";
+    macro_rules! tests_fixtures_dir {
+        () => {
+            concat!(env!("CARGO_MANIFEST_DIR"), "/tests/")
+        };
+    }
+
+    const SNAPSHOTS_DIR: &str = concat!(tests_fixtures_dir!(), "snapshots");
+    const TEST_TOML_PATH: &str = concat!(tests_fixtures_dir!(), "test.toml");
     const TEST_TOML: &str = include_str!("../tests/test.toml");
 
     #[test_case("oneword" => "oneword")]
@@ -133,5 +152,38 @@ mod tests {
             resp.body_string().await.unwrap(),
             r#"{"enabled":false,"hostname":"server1","ip":"10.0.0.1"}"#
         );
+    }
+
+    #[async_std::test]
+    async fn load_config_no_file() {
+        let temp_file = NamedTempFile::new().unwrap();
+        let path = temp_file.path().to_owned();
+        temp_file.close().unwrap();
+
+        assert!(super::load_config(path.to_str().unwrap()).await.is_err());
+    }
+
+    #[async_std::test]
+    async fn load_config_empty_file() {
+        let temp_file = NamedTempFile::new().unwrap();
+
+        assert!(super::load_config(temp_file.path().to_str().unwrap())
+            .await
+            .is_err());
+    }
+
+    #[async_std::test]
+    async fn load_config_parse_error() {
+        let mut temp_file = NamedTempFile::new().unwrap();
+        writeln!(temp_file, "a = t").unwrap();
+
+        assert!(super::load_config(temp_file.path().to_str().unwrap())
+            .await
+            .is_err());
+    }
+
+    #[async_std::test]
+    async fn load_config_success() {
+        assert!(super::load_config(TEST_TOML_PATH).await.is_ok());
     }
 }

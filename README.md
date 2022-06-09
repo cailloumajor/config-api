@@ -12,9 +12,12 @@ Static configuration API
 Reads a TOML configuration file and serves it as JSON.
 
 USAGE:
-    static_config_api [OPTIONS]
+    static_config_api [OPTIONS] --config-path <CONFIG_PATH>
 
 OPTIONS:
+        --config-path <CONFIG_PATH>
+            Path of the static configuration TOML file [env: CONFIG_PATH=]
+
     -h, --help
             Print help information
 
