@@ -51,7 +51,7 @@ pub async fn load_config(path: &str) -> anyhow::Result<TOMLValue> {
 }
 
 pub async fn handler(req: Request<AppState>) -> tide::Result {
-    let mut subset = &req.state().toml_value.read().await.clone();
+    let mut subset = &req.state().static_config.read().await.clone();
     let path = req.param("path").unwrap();
     for subpath in path.split('/') {
         let got = subset.get(subpath);
@@ -110,8 +110,8 @@ mod tests {
 
     #[async_std::test]
     async fn handler() {
-        let toml_value = Arc::new(RwLock::new(toml::from_str(TEST_TOML).unwrap()));
-        let mut app = tide::with_state(AppState { toml_value });
+        let static_config = Arc::new(RwLock::new(toml::from_str(TEST_TOML).unwrap()));
+        let mut app = tide::with_state(AppState { static_config });
         app.at("/test/*path").get(super::handler);
 
         let mut resp = app.get("/test/nonexistent").await.unwrap();
