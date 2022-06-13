@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.3
 
-FROM --platform=$BUILDPLATFORM tonistiigi/xx:1.1.0 AS xx
+FROM --platform=$BUILDPLATFORM tonistiigi/xx:1.1.1 AS xx
 
 FROM --platform=$BUILDPLATFORM rust:1.61.0-bullseye AS builder
 
