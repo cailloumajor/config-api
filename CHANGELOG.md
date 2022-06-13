@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.1](https://github.com/cailloumajor/static-config-api/compare/v1.0.0...v1.0.1) (2022-06-13)
+
+
+### Bug Fixes
+
+* update regex to get Rust version in Dockerfile ([ecd783b](https://github.com/cailloumajor/static-config-api/commit/ecd783b83219322ae27fcb8cad93753f48783650))
+* use cross-compilation when building image ([61ed57d](https://github.com/cailloumajor/static-config-api/commit/61ed57d1ac2215998714a160ca6319f123478126))
+
 ## 1.0.0 (2022-06-13)
 
 
