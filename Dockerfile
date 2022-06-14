@@ -23,7 +23,8 @@ RUN --mount=type=cache,target=/usr/local/cargo/git/db \
     apt-get install -y --no-install-recommends "crossbuild-essential-$(xx-info debian-arch)" && \
     export RUST_TRIPLE="$(xx-info march)-unknown-$(xx-info os)-$(xx-info libc)" && \
     rustup target add "$RUST_TRIPLE" && \
-    cargo install --target "$RUST_TRIPLE" --locked --path . --root .
+    cargo install --target "$RUST_TRIPLE" --locked --path . --root . && \
+    xx-verify bin/*
 
 # hadolint ignore=DL3006
 FROM gcr.io/distroless/cc-debian11
