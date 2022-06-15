@@ -51,7 +51,13 @@ pub async fn load_config(path: &str) -> anyhow::Result<TOMLValue> {
 }
 
 pub async fn handler(req: Request<AppState>) -> tide::Result {
-    let mut subset = &req.state().static_config.read().await.clone();
+    let mut subset = &req
+        .state()
+        .static_config
+        .read()
+        .await
+        .clone()
+        .context("invalid configuration")?;
     let path = req.param("path").unwrap();
     for subpath in path.split('/') {
         let got = subset.get(subpath);
@@ -60,7 +66,7 @@ pub async fn handler(req: Request<AppState>) -> tide::Result {
         } else {
             return Ok(Response::builder(StatusCode::NotFound)
                 .body("Path was not found in configuration")
-                .into());
+                .build());
         }
     }
     Ok(toml_to_json(subset).into())
@@ -68,13 +74,13 @@ pub async fn handler(req: Request<AppState>) -> tide::Result {
 
 #[cfg(test)]
 mod tests {
-    use async_std::sync::{Arc, RwLock};
     use std::io::Write;
     use std::path::Path;
+
+    use async_std::sync::{Arc, RwLock};
     use tempfile::NamedTempFile;
     use test_case::test_case;
-    use tide::http::mime;
-    use tide_testing::TideTestingExt;
+    use tide::http::{mime, Request, Response, Url};
 
     use crate::AppState;
 
@@ -108,19 +114,35 @@ mod tests {
         });
     }
 
-    #[async_std::test]
-    async fn handler() {
-        let static_config = Arc::new(RwLock::new(toml::from_str(TEST_TOML).unwrap()));
+    async fn request_handler(toml_config: Option<&str>, path: &str) -> Response {
+        let static_config = Arc::new(RwLock::new(toml_config.map(|t| toml::from_str(t).unwrap())));
         let mut app = tide::with_state(AppState { static_config });
         app.at("/test/*path").get(super::handler);
+        let url = Url::parse("http://example.com")
+            .unwrap()
+            .join(path)
+            .unwrap();
+        app.respond(Request::get(url)).await.unwrap()
+    }
 
-        let mut resp = app.get("/test/nonexistent").await.unwrap();
+    #[async_std::test]
+    async fn handler_none_static_config() {
+        let resp = request_handler(None, "/test/title").await;
+        assert_eq!(resp.status(), 500);
+    }
+
+    #[async_std::test]
+    async fn handler_nonexistent_path() {
+        let mut resp = request_handler(Some(TEST_TOML), "/test/nonexistent").await;
         assert_eq!(resp.status(), 404);
         assert_eq!(
             resp.body_string().await.unwrap(),
             "Path was not found in configuration"
         );
+    }
 
+    #[async_std::test]
+    async fn handler_root_path() {
         // let mut resp = app.get("/test/").await.unwrap();
         // assert_eq!(resp.status(), 200);
         // assert!(resp
@@ -131,18 +153,24 @@ mod tests {
         // assert!(!body_json.as_object().unwrap().is_empty());
         // TODO: replace below test case with the one above when tide matches
         //       empty wildcard (v0.17.0).
-        let resp = app.get("/test/").await.unwrap();
+        let resp = request_handler(Some(TEST_TOML), "/test/").await;
         assert_eq!(resp.status(), 404);
+    }
 
-        let mut resp = app.get("/test/title").await.unwrap();
+    #[async_std::test]
+    async fn handler_string_value() {
+        let mut resp = request_handler(Some(TEST_TOML), "/test/title").await;
         assert_eq!(resp.status(), 200);
         assert!(resp
             .header("Content-Type")
             .unwrap()
             .contains(&mime::JSON.into()));
         assert_eq!(resp.body_string().await.unwrap(), r#""TOML example 😊""#);
+    }
 
-        let mut resp = app.get("/test/servers/alpha").await.unwrap();
+    #[async_std::test]
+    async fn handler_object_value() {
+        let mut resp = request_handler(Some(TEST_TOML), "/test/servers/alpha").await;
         assert_eq!(resp.status(), 200);
         assert!(resp
             .header("Content-Type")
