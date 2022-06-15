@@ -14,8 +14,12 @@ use signal_hook::low_level::signal_name;
 use signal_hook_async_std::Signals;
 
 mod config;
+mod health;
 
 use config::{handler as config_handler, load_config};
+use health::handler as health_handler;
+
+type StaticConfig = Arc<RwLock<Option<toml::Value>>>;
 
 #[derive(Parser)]
 #[clap(name = "Static configuration API")]
@@ -32,7 +36,7 @@ struct Args {
 
 #[derive(Clone)]
 pub struct AppState {
-    static_config: Arc<RwLock<toml::Value>>,
+    static_config: StaticConfig,
 }
 
 async fn handle_signals(mut signals: Signals, abort_handle: AbortHandle) {
@@ -50,16 +54,22 @@ async fn handle_signals(mut signals: Signals, abort_handle: AbortHandle) {
 async fn handle_notify(
     mut rx: Receiver<notify::Result<Event>>,
     config_path: Arc<String>,
-    static_config: Arc<RwLock<toml::Value>>,
+    static_config: StaticConfig,
 ) {
     while let Some(result) = rx.next().await {
         match result {
             Ok(event) => {
                 if event.kind.is_modify() {
                     eprintln!(r#"from=handle_notify msg="reloading configuration""#);
+                    let mut config_write = static_config.write().await;
                     match load_config(&config_path).await {
-                        Ok(new_config) => *static_config.write().await = new_config,
-                        Err(err) => eprintln!("from=handle_notify during=load_config err={err}"),
+                        Ok(new_config) => {
+                            *config_write = Some(new_config);
+                        }
+                        Err(err) => {
+                            *config_write = None;
+                            eprintln!("from=handle_notify during=load_config err={err}");
+                        }
                     }
                 }
             }
@@ -78,11 +88,11 @@ async fn main() -> anyhow::Result<()> {
     let signals_handle = signals.handle();
     let signal_task = task::spawn(handle_signals(signals, abort_handle));
 
-    let static_config = Arc::new(RwLock::new(
+    let static_config = Arc::new(RwLock::new(Some(
         load_config(&args.config_path)
             .await
             .context("error during initial load of static configuration")?,
-    ));
+    )));
 
     let (notify_tx, notify_rx) = channel::bounded(1);
     let watch_config_task = task::spawn(handle_notify(
@@ -109,6 +119,7 @@ async fn main() -> anyhow::Result<()> {
 
     let mut app = tide::with_state(AppState { static_config });
     app.at("/config/*path").get(config_handler);
+    app.at("/healthcheck").get(health_handler);
     eprintln!(r#"listen="{}" msg="start listening""#, args.listen_address);
 
     let listen_future = Abortable::new(app.listen(args.listen_address), abort_registration);

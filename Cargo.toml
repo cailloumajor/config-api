@@ -29,4 +29,3 @@ features = [ "h1-client" ]
 insta = "1.14.1"
 tempfile = "3.3.0"
 test-case = "2.1.0"
-tide-testing = "0.1.3"
