@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/cailloumajor/static-config-api/compare/v1.0.2...v1.1.0) (2022-06-16)
+
+
+### Features
+
+* add healthcheck endpoint ([b01b874](https://github.com/cailloumajor/static-config-api/commit/b01b874cb412ffbc6ef647a2b78505564beded8d))
+
 ## [1.0.2](https://github.com/cailloumajor/static-config-api/compare/v1.0.1...v1.0.2) (2022-06-14)
 
 
