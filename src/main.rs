@@ -119,7 +119,7 @@ async fn main() -> anyhow::Result<()> {
 
     let mut app = tide::with_state(AppState { static_config });
     app.at("/config/*path").get(config_handler);
-    app.at("/healthcheck").get(health_handler);
+    app.at("/health").get(health_handler);
     eprintln!(r#"listen="{}" msg="start listening""#, args.listen_address);
 
     let listen_future = Abortable::new(app.listen(args.listen_address), abort_registration);
