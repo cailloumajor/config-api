@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/cailloumajor/static-config-api/compare/v1.1.0...v1.1.1) (2022-06-16)
+
+
+### Bug Fixes
+
+* set correct path for health endpoint ([7035ad4](https://github.com/cailloumajor/static-config-api/commit/7035ad451cb9cc098012fb7888ab92b591d221e8))
+
 ## [1.1.0](https://github.com/cailloumajor/static-config-api/compare/v1.0.2...v1.1.0) (2022-06-16)
 
 
