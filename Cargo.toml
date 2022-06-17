@@ -19,6 +19,8 @@ signal-hook = "0.3.14"
 signal-hook-async-std = "0.2.2"
 tide = "0.16.0"
 toml = "0.5.9"
+trillium = "0.2.2"
+trillium-async-std = "0.2.0"
 
 [dependencies.surf]
 version = "2.3.2"
@@ -29,3 +31,4 @@ features = [ "h1-client" ]
 insta = "1.15.0"
 tempfile = "3.3.0"
 test-case = "2.1.0"
+trillium-testing = { version = "0.4.0", features = [ "async-std" ] }
