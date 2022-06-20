@@ -1,3 +1,4 @@
+use lazy_static::lazy_static;
 use serde::{Serialize, Serializer};
 use trillium::{conn_try, Conn, KnownHeaderName, Status};
 
@@ -40,6 +41,14 @@ impl ProblemDetails {
         self.detail = Some(detail.into());
         self
     }
+}
+
+lazy_static! {
+    pub static ref PROBLEM_INVALID_CONFIG: ProblemDetails = ProblemDetails::new(
+        "config-invalid",
+        "static configuration is invalid",
+        Status::InternalServerError
+    );
 }
 
 /// Extension trait that adds methods to [`trillium::Conn`].
