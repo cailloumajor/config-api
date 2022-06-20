@@ -3,11 +3,6 @@
 {
 	"name": "Rust",
 	"build": {
-		"args": {
-			"http_proxy": "http://192.168.90.5:3128",
-			"https_proxy": "http://192.168.90.5:3128",
-			"no_proxy": "localhost"
-		},
 		"dockerfile": "Dockerfile"
 	},
 	"runArgs": [
@@ -15,12 +10,6 @@
 		"--security-opt",
 		"seccomp=unconfined"
 	],
-
-	"containerEnv": {
-		"http_proxy": "http://192.168.90.5:3128",
-		"https_proxy": "http://192.168.90.5:3128",
-		"no_proxy": "localhost"
-	},
 
 	// Set *default* container specific settings.json values on container create.
 	"settings": {
