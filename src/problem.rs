@@ -20,19 +20,25 @@ pub struct ProblemDetails {
     type_uri: String,
     title: String,
     status: StatusCode,
-    detail: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    detail: Option<String>,
 }
 
 impl ProblemDetails {
-    pub fn new(problem_type: &str, title: &str, status: Status, detail: &str) -> Self {
+    pub fn new(problem_type: &str, title: &str, status: Status) -> Self {
         let mut type_uri = String::from("/problem/");
         type_uri.push_str(problem_type);
         Self {
             type_uri,
             title: title.into(),
             status: StatusCode(status),
-            detail: detail.into(),
+            detail: Default::default(),
         }
+    }
+
+    pub fn with_detail(mut self, detail: &str) -> Self {
+        self.detail = Some(detail.into());
+        self
     }
 }
 
@@ -57,19 +63,34 @@ mod tests {
 
     use super::*;
 
-    async fn handler(conn: Conn) -> Conn {
+    async fn handler_without_detail(conn: Conn) -> Conn {
         conn.with_problem_details(&ProblemDetails::new(
             "test-problem",
-            "A test problem",
+            "A test problem without detail",
             Status::ImATeapot,
-            "Test problem details",
         ))
     }
 
+    async fn handler_with_detail(conn: Conn) -> Conn {
+        conn.with_problem_details(
+            &ProblemDetails::new("test-problem", "A test problem", Status::ImATeapot)
+                .with_detail("Test problem details"),
+        )
+    }
+
     #[test]
-    fn with_problem_details() {
+    fn with_problem_details_without_detail() {
         assert_response!(
-            get("/").on(&handler),
+            get("/").on(&handler_without_detail),
+            Status::ImATeapot,
+            r#"{"type":"/problem/test-problem","title":"A test problem without detail","status":418}"#,
+            "content-type" => "application/problem+json"
+        );
+    }
+    #[test]
+    fn with_problem_details_with_detail() {
+        assert_response!(
+            get("/").on(&handler_with_detail),
             Status::ImATeapot,
             r#"{"type":"/problem/test-problem","title":"A test problem","status":418,"detail":"Test problem details"}"#,
             "content-type" => "application/problem+json"
