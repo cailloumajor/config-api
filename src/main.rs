@@ -12,7 +12,7 @@ use notify::{recommended_watcher, Event, RecursiveMode, Watcher};
 use signal_hook::consts::TERM_SIGNALS;
 use signal_hook::low_level::signal_name;
 use signal_hook_async_std::Signals;
-use trillium::{Handler, State};
+use trillium::{Conn, Handler, KnownHeaderName, State};
 use trillium_async_std::Stopper;
 use trillium_compression::Compression;
 use trillium_router::Router;
@@ -84,6 +84,11 @@ async fn handle_notify(
     eprintln!("from=handle_notify status=exiting");
 }
 
+async fn remove_server_header(mut conn: Conn) -> Conn {
+    conn.headers_mut().remove(KnownHeaderName::Server);
+    conn
+}
+
 fn router() -> impl Handler {
     Router::new()
         .get("/config/*", config_handler)
@@ -137,6 +142,7 @@ async fn main() -> anyhow::Result<()> {
         .run_async((
             State::new(AppState { static_config }),
             Compression::new(),
+            remove_server_header,
             router(),
         ))
         .await;
