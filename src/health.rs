@@ -22,12 +22,16 @@ pub async fn handler(conn: Conn) -> Conn {
 mod tests {
     use async_std::sync::{Arc, RwLock};
     use trillium::{Handler, State};
+    use trillium_caching_headers::EntityTag;
     use trillium_testing::prelude::*;
 
-    use crate::AppState;
+    use crate::{AppState, StaticConfig};
 
     fn handler(toml_value: Option<toml::Value>) -> impl Handler {
-        let static_config = Arc::new(RwLock::new(toml_value));
+        let static_config = Arc::new(RwLock::new(toml_value.map(|t| StaticConfig {
+            toml_value: t,
+            etag: EntityTag::weak(""),
+        })));
         (State::new(AppState { static_config }), super::handler)
     }
 

@@ -14,6 +14,7 @@ use signal_hook::low_level::signal_name;
 use signal_hook_async_std::Signals;
 use trillium::{Conn, Handler, KnownHeaderName, State};
 use trillium_async_std::Stopper;
+use trillium_caching_headers::EntityTag;
 use trillium_compression::Compression;
 use trillium_router::Router;
 
@@ -23,8 +24,6 @@ mod problem;
 
 use config::{handler as config_handler, load_config};
 use health::handler as health_handler;
-
-type StaticConfig = Arc<RwLock<Option<toml::Value>>>;
 
 #[derive(Parser)]
 #[clap(name = "Static configuration API")]
@@ -40,8 +39,16 @@ struct Args {
 }
 
 #[derive(Clone)]
+pub struct StaticConfig {
+    toml_value: toml::Value,
+    etag: EntityTag,
+}
+
+type SafeStaticConfig = Arc<RwLock<Option<StaticConfig>>>;
+
+#[derive(Clone)]
 pub struct AppState {
-    static_config: StaticConfig,
+    static_config: SafeStaticConfig,
 }
 
 async fn handle_signals(mut signals: Signals, stopper: Stopper) {
@@ -59,7 +66,7 @@ async fn handle_signals(mut signals: Signals, stopper: Stopper) {
 async fn handle_notify(
     mut rx: Receiver<notify::Result<Event>>,
     config_path: Arc<String>,
-    static_config: StaticConfig,
+    static_config: SafeStaticConfig,
 ) {
     while let Some(result) = rx.next().await {
         match result {

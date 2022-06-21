@@ -641,6 +641,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "etag"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aec9f8918ec91bd35f3068e33da01b72a295ac8a7baacb0290b56ffeeec9d88f"
+dependencies = [
+ "str-buf",
+ "xxhash-rust",
+]
+
+[[package]]
 name = "event-listener"
 version = "2.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1836,6 +1846,7 @@ dependencies = [
  "trillium",
  "trillium-api",
  "trillium-async-std",
+ "trillium-caching-headers",
  "trillium-compression",
  "trillium-router",
  "trillium-testing",
@@ -1900,6 +1911,12 @@ dependencies = [
  "pin-project",
  "waker-set",
 ]
+
+[[package]]
+name = "str-buf"
+version = "2.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0873cb29201126440dcc78d0b1f5a13d917e78831778429a7920ca9c7f3dae1e"
 
 [[package]]
 name = "strsim"
@@ -2136,6 +2153,17 @@ dependencies = [
  "trillium",
  "trillium-http",
  "trillium-server-common",
+]
+
+[[package]]
+name = "trillium-caching-headers"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0d1cc9754005a2ad9396f696fc5d9b4c7faa5a091944314b4b195ebc4869e14d"
+dependencies = [
+ "etag",
+ "httpdate",
+ "trillium",
 ]
 
 [[package]]
@@ -2511,6 +2539,12 @@ name = "windows_x86_64_msvc"
 version = "0.36.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c811ca4a8c853ef420abd8592ba53ddbbac90410fab6903b3e79972a631f7680"
+
+[[package]]
+name = "xxhash-rust"
+version = "0.8.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "074914ea4eec286eb8d1fd745768504f420a1f7b7919185682a4a267bed7d2e7"
 
 [[package]]
 name = "yaml-rust"

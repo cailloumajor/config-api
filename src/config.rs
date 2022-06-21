@@ -4,10 +4,11 @@ use serde_json::Value as JSONValue;
 use toml::Value as TOMLValue;
 use trillium::{Conn, Status};
 use trillium_api::ApiConnExt;
+use trillium_caching_headers::{CacheControlDirective, CachingHeadersExt, EntityTag};
 use trillium_router::RouterConnExt;
 
 use crate::problem::{ProblemDetails, ProblemDetailsConnExt, PROBLEM_INVALID_CONFIG};
-use crate::AppState;
+use crate::{AppState, StaticConfig};
 
 fn camel_case(source: &str) -> String {
     let mut dest = String::with_capacity(source.len());
@@ -45,26 +46,37 @@ fn toml_to_json(toml_value: &TOMLValue) -> JSONValue {
     }
 }
 
-pub async fn load_config(path: &str) -> anyhow::Result<TOMLValue> {
+pub async fn load_config(path: &str) -> anyhow::Result<StaticConfig> {
     let content = fs::read_to_string(path)
         .await
         .context("error reading configuration file")?;
+    let metadata = fs::metadata(path)
+        .await
+        .context("error reading configuration file metadata")?;
+    let etag = EntityTag::from_file_meta(&metadata);
     ensure!(!content.is_empty(), "configuration file is empty");
-    Ok(content.parse()?)
+    let toml_value = content.parse()?;
+    Ok(StaticConfig { toml_value, etag })
 }
 
-pub async fn handler(conn: Conn) -> Conn {
-    let static_config = conn
+pub async fn handler(mut conn: Conn) -> Conn {
+    let maybe_static_config = conn
         .state::<AppState>()
         .unwrap()
         .static_config
         .read()
         .await
         .to_owned();
-    let mut subset = match static_config {
-        Some(ref value) => value,
+    let StaticConfig { toml_value, etag } = match maybe_static_config {
+        Some(static_config) => static_config,
         None => return conn.with_problem_details(&PROBLEM_INVALID_CONFIG),
     };
+    let mut subset = &toml_value;
+    conn.set_etag(&etag);
+    conn.set_cache_control(CacheControlDirective::NoCache);
+    if conn.if_none_match().map(|ref inm| etag.weak_eq(inm)) == Some(true) {
+        return conn.with_status(Status::NotModified);
+    }
     let path = conn.wildcard().unwrap().to_owned();
     for subpath in path.split('/') {
         match subset.get(subpath) {
@@ -96,10 +108,11 @@ mod tests {
     use tempfile::NamedTempFile;
     use test_case::test_case;
     use trillium::{Handler, State};
+    use trillium_caching_headers::EntityTag;
     use trillium_router::Router;
     use trillium_testing::prelude::*;
 
-    use crate::AppState;
+    use crate::{AppState, StaticConfig};
 
     macro_rules! tests_fixtures_dir {
         () => {
@@ -133,7 +146,10 @@ mod tests {
 
     fn handler(toml_config: Option<&str>) -> impl Handler {
         let router = Router::new().get("/test/*", super::handler);
-        let static_config = Arc::new(RwLock::new(toml_config.map(|t| toml::from_str(t).unwrap())));
+        let static_config = Arc::new(RwLock::new(toml_config.map(|t| StaticConfig {
+            toml_value: toml::from_str(t).unwrap(),
+            etag: EntityTag::weak("test-etag"),
+        })));
         (State::new(AppState { static_config }), router)
     }
 
@@ -144,6 +160,20 @@ mod tests {
         assert_status!(conn, 500);
         assert_body_contains!(conn, r#""type":"/problem/config-invalid""#);
         assert_headers!(conn, "content-type" => "application/problem+json");
+    }
+
+    #[async_std::test]
+    async fn handler_etag_match() {
+        let handler = handler(Some(TEST_TOML));
+        let conn = get("/test/title")
+            .with_request_header("If-None-Match", "W/\"test-etag\"")
+            .on(&handler);
+        assert_status!(conn, 304);
+        assert_headers!(
+            conn,
+            "Cache-Control" => "no-cache",
+            "Etag" => "W/\"test-etag\""
+        )
     }
 
     #[async_std::test]
@@ -171,7 +201,9 @@ mod tests {
             get("/test/title").on(&handler),
             200,
             r#""TOML example 😊""#,
-            "Content-Type" => "application/json"
+            "Content-Type" => "application/json",
+            "Cache-Control" => "no-cache",
+            "Etag" => "W/\"test-etag\""
         );
     }
 
@@ -182,7 +214,9 @@ mod tests {
             get("/test/servers/alpha").on(&handler),
             200,
             r#"{"enabled":false,"hostname":"server1","ip":"10.0.0.1"}"#,
-            "Content-Type" => "application/json"
+            "Content-Type" => "application/json",
+            "Cache-Control" => "no-cache",
+            "Etag" => "W/\"test-etag\""
         );
     }
 
