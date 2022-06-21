@@ -15,7 +15,6 @@ use signal_hook_async_std::Signals;
 use trillium::{Conn, Handler, KnownHeaderName, State};
 use trillium_async_std::Stopper;
 use trillium_caching_headers::EntityTag;
-use trillium_compression::Compression;
 use trillium_router::Router;
 
 mod config;
@@ -148,7 +147,6 @@ async fn main() -> anyhow::Result<()> {
         .with_stopper(trillium_stopper)
         .run_async((
             State::new(AppState { static_config }),
-            Compression::new(),
             remove_server_header,
             router(),
         ))
