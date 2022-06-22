@@ -68,6 +68,13 @@ mod tests {
 
     use super::*;
 
+    #[test]
+    fn problem_details() {
+        let problem = ProblemDetails::new("test-problem", "A test problem", Status::ImATeapot);
+        assert_eq!(problem.title(), "A test problem");
+        assert_eq!(problem.status(), 418);
+    }
+
     async fn handler_without_detail(conn: Conn) -> Conn {
         conn.with_problem_details(&ProblemDetails::new(
             "test-problem",
