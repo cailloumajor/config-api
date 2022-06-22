@@ -38,7 +38,7 @@ struct Args {
 
 #[derive(Clone)]
 pub struct StaticConfig {
-    toml_value: toml::Value,
+    data: serde_json::Value,
     etag: EntityTag,
 }
 

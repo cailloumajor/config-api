@@ -56,8 +56,8 @@ pub async fn load_config(path: &str) -> anyhow::Result<StaticConfig> {
         .context("error reading configuration file metadata")?;
     let etag = EntityTag::from_file_meta(&metadata);
     ensure!(!content.is_empty(), "configuration file is empty");
-    let toml_value = content.parse()?;
-    Ok(StaticConfig { toml_value, etag })
+    let data = toml_to_json(&content.parse()?);
+    Ok(StaticConfig { data, etag })
 }
 
 pub async fn handler(mut conn: Conn) -> Conn {
@@ -68,36 +68,30 @@ pub async fn handler(mut conn: Conn) -> Conn {
         .read()
         .await
         .to_owned();
-    let StaticConfig { toml_value, etag } = match maybe_static_config {
+    let StaticConfig { data, etag } = match maybe_static_config {
         Some(static_config) => static_config,
         None => return conn.with_problem_details(&PROBLEM_INVALID_CONFIG),
     };
-    let mut subset = &toml_value;
     conn.set_etag(&etag);
     conn.set_cache_control(CacheControlDirective::NoCache);
     if conn.if_none_match().map(|ref inm| etag.weak_eq(inm)) == Some(true) {
         return conn.with_status(Status::NotModified);
     }
-    let path = conn.wildcard().unwrap().to_owned();
-    for subpath in path.split('/') {
-        match subset.get(subpath) {
-            Some(value) => subset = value,
-            None => {
-                return conn.with_problem_details(
-                    &ProblemDetails::new(
-                        "path-not-found",
-                        "path not found in configuration",
-                        Status::NotFound,
-                    )
-                    .with_detail(&format!(
-                        r"path `{}` was not found in static configuration",
-                        path
-                    )),
-                )
-            }
-        };
+    let path = "/".to_owned() + conn.wildcard().unwrap();
+    match data.pointer(&path) {
+        Some(subset) => conn.with_json(subset),
+        None => conn.with_problem_details(
+            &ProblemDetails::new(
+                "path-not-found",
+                "path not found in configuration",
+                Status::NotFound,
+            )
+            .with_detail(&format!(
+                r"path `{}` was not found in static configuration",
+                path
+            )),
+        ),
     }
-    conn.with_json(&toml_to_json(subset))
 }
 
 #[cfg(test)]
@@ -123,6 +117,7 @@ mod tests {
 
     const SNAPSHOTS_DIR: &str = concat!(tests_fixtures_dir!(), "snapshots");
     const TEST_TOML_PATH: &str = concat!(tests_fixtures_dir!(), "test.toml");
+    const TEST_JSON: &str = include_str!("../tests/test.json");
     const TEST_TOML: &str = include_str!("../tests/test.toml");
 
     #[test_case("oneword" => "oneword")]
@@ -145,10 +140,10 @@ mod tests {
         });
     }
 
-    fn handler(toml_config: Option<&str>) -> impl Handler {
+    fn handler(json_config: Option<&str>) -> impl Handler {
         let router = Router::new().get("/test/*", super::handler);
-        let static_config = Arc::new(RwLock::new(toml_config.map(|t| StaticConfig {
-            toml_value: toml::from_str(t).unwrap(),
+        let static_config = Arc::new(RwLock::new(json_config.map(|t| StaticConfig {
+            data: serde_json::from_str(t).unwrap(),
             etag: EntityTag::weak("test-etag"),
         })));
         (State::new(AppState { static_config }), router)
@@ -165,7 +160,7 @@ mod tests {
 
     #[async_std::test]
     async fn handler_etag_match() {
-        let handler = handler(Some(TEST_TOML));
+        let handler = handler(Some(TEST_JSON));
         let conn = get("/test/title")
             .with_request_header("If-None-Match", "W/\"test-etag\"")
             .on(&handler);
@@ -179,7 +174,7 @@ mod tests {
 
     #[async_std::test]
     async fn handler_nonexistent_path() {
-        let handler = handler(Some(TEST_TOML));
+        let handler = handler(Some(TEST_JSON));
         let mut conn = get("/test/nonexistent").on(&handler);
         assert_status!(conn, 404);
         assert_body_contains!(conn, r#""type":"/problem/path-not-found""#);
@@ -188,7 +183,7 @@ mod tests {
 
     #[async_std::test]
     async fn handler_root_path() {
-        let handler = handler(Some(TEST_TOML));
+        let handler = handler(Some(TEST_JSON));
         let mut conn = get("/test/").on(&handler);
         assert_status!(conn, 404);
         assert_body_contains!(conn, r#""type":"/problem/path-not-found""#);
@@ -197,7 +192,7 @@ mod tests {
 
     #[async_std::test]
     async fn handler_string_value() {
-        let handler = handler(Some(TEST_TOML));
+        let handler = handler(Some(TEST_JSON));
         assert_response!(
             get("/test/title").on(&handler),
             200,
@@ -210,11 +205,24 @@ mod tests {
 
     #[async_std::test]
     async fn handler_object_value() {
-        let handler = handler(Some(TEST_TOML));
+        let handler = handler(Some(TEST_JSON));
         assert_response!(
             get("/test/servers/alpha").on(&handler),
             200,
             r#"{"enabled":false,"hostname":"server1","ip":"10.0.0.1"}"#,
+            "Content-Type" => "application/json",
+            "Cache-Control" => "no-cache",
+            "Etag" => "W/\"test-etag\""
+        );
+    }
+
+    #[async_std::test]
+    async fn handler_array_member() {
+        let handler = handler(Some(TEST_JSON));
+        assert_response!(
+            get("/test/characters/star-trek/0").on(&handler),
+            200,
+            r#"{"name":"James Kirk","rank":"Captain"}"#,
             "Content-Type" => "application/json",
             "Cache-Control" => "no-cache",
             "Etag" => "W/\"test-etag\""

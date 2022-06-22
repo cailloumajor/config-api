@@ -28,9 +28,9 @@ mod tests {
 
     use crate::{AppState, StaticConfig};
 
-    fn handler(toml_value: Option<toml::Value>) -> impl Handler {
-        let static_config = Arc::new(RwLock::new(toml_value.map(|t| StaticConfig {
-            toml_value: t,
+    fn handler(with_static_config: bool) -> impl Handler {
+        let static_config = Arc::new(RwLock::new(with_static_config.then(|| StaticConfig {
+            data: serde_json::Value::Bool(false),
             etag: EntityTag::weak(""),
         })));
         (State::new(AppState { static_config }), super::handler)
@@ -38,7 +38,7 @@ mod tests {
 
     #[async_std::test]
     async fn handler_none_static_config() {
-        let handler = handler(None);
+        let handler = handler(false);
         let mut conn = get("/").on(&handler);
         assert_status!(conn, 500);
         assert_body_contains!(conn, r#""type":"/problem/config-invalid""#);
@@ -47,7 +47,7 @@ mod tests {
 
     #[async_std::test]
     async fn handler_healthy() {
-        let handler = handler(Some(toml::Value::Boolean(false)));
+        let handler = handler(true);
         assert_status!(get("/").on(&handler), 204);
     }
 }
