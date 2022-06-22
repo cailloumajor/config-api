@@ -1,10 +1,15 @@
 use anyhow::{ensure, Context};
 use async_std::fs;
 use serde_json::Value as JSONValue;
-use tide::{Request, Response, StatusCode};
 use toml::Value as TOMLValue;
+use trillium::{Conn, Status};
+use trillium_api::ApiConnExt;
+use trillium_caching_headers::{CacheControlDirective, CachingHeadersExt, EntityTag};
+use trillium_router::RouterConnExt;
 
-use crate::AppState;
+use static_config_api::rfc7807::{ProblemDetails, ProblemDetailsConnExt, PROBLEM_INVALID_CONFIG};
+
+use crate::{AppState, StaticConfig};
 
 fn camel_case(source: &str) -> String {
     let mut dest = String::with_capacity(source.len());
@@ -42,34 +47,57 @@ fn toml_to_json(toml_value: &TOMLValue) -> JSONValue {
     }
 }
 
-pub async fn load_config(path: &str) -> anyhow::Result<TOMLValue> {
+pub async fn load_config(path: &str) -> anyhow::Result<StaticConfig> {
     let content = fs::read_to_string(path)
         .await
         .context("error reading configuration file")?;
+    let metadata = fs::metadata(path)
+        .await
+        .context("error reading configuration file metadata")?;
+    let etag = EntityTag::from_file_meta(&metadata);
     ensure!(!content.is_empty(), "configuration file is empty");
-    Ok(content.parse()?)
+    let toml_value = content.parse()?;
+    Ok(StaticConfig { toml_value, etag })
 }
 
-pub async fn handler(req: Request<AppState>) -> tide::Result {
-    let mut subset = &req
-        .state()
+pub async fn handler(mut conn: Conn) -> Conn {
+    let maybe_static_config = conn
+        .state::<AppState>()
+        .unwrap()
         .static_config
         .read()
         .await
-        .clone()
-        .context("invalid configuration")?;
-    let path = req.param("path").unwrap();
-    for subpath in path.split('/') {
-        let got = subset.get(subpath);
-        if let Some(value) = got {
-            subset = value;
-        } else {
-            return Ok(Response::builder(StatusCode::NotFound)
-                .body("Path was not found in configuration")
-                .build());
-        }
+        .to_owned();
+    let StaticConfig { toml_value, etag } = match maybe_static_config {
+        Some(static_config) => static_config,
+        None => return conn.with_problem_details(&PROBLEM_INVALID_CONFIG),
+    };
+    let mut subset = &toml_value;
+    conn.set_etag(&etag);
+    conn.set_cache_control(CacheControlDirective::NoCache);
+    if conn.if_none_match().map(|ref inm| etag.weak_eq(inm)) == Some(true) {
+        return conn.with_status(Status::NotModified);
     }
-    Ok(toml_to_json(subset).into())
+    let path = conn.wildcard().unwrap().to_owned();
+    for subpath in path.split('/') {
+        match subset.get(subpath) {
+            Some(value) => subset = value,
+            None => {
+                return conn.with_problem_details(
+                    &ProblemDetails::new(
+                        "path-not-found",
+                        "path not found in configuration",
+                        Status::NotFound,
+                    )
+                    .with_detail(&format!(
+                        r"path `{}` was not found in static configuration",
+                        path
+                    )),
+                )
+            }
+        };
+    }
+    conn.with_json(&toml_to_json(subset))
 }
 
 #[cfg(test)]
@@ -80,9 +108,12 @@ mod tests {
     use async_std::sync::{Arc, RwLock};
     use tempfile::NamedTempFile;
     use test_case::test_case;
-    use tide::http::{mime, Request, Response, Url};
+    use trillium::{Handler, State};
+    use trillium_caching_headers::EntityTag;
+    use trillium_router::Router;
+    use trillium_testing::prelude::*;
 
-    use crate::AppState;
+    use crate::{AppState, StaticConfig};
 
     macro_rules! tests_fixtures_dir {
         () => {
@@ -114,71 +145,79 @@ mod tests {
         });
     }
 
-    async fn request_handler(toml_config: Option<&str>, path: &str) -> Response {
-        let static_config = Arc::new(RwLock::new(toml_config.map(|t| toml::from_str(t).unwrap())));
-        let mut app = tide::with_state(AppState { static_config });
-        app.at("/test/*path").get(super::handler);
-        let url = Url::parse("http://example.com")
-            .unwrap()
-            .join(path)
-            .unwrap();
-        app.respond(Request::get(url)).await.unwrap()
+    fn handler(toml_config: Option<&str>) -> impl Handler {
+        let router = Router::new().get("/test/*", super::handler);
+        let static_config = Arc::new(RwLock::new(toml_config.map(|t| StaticConfig {
+            toml_value: toml::from_str(t).unwrap(),
+            etag: EntityTag::weak("test-etag"),
+        })));
+        (State::new(AppState { static_config }), router)
     }
 
     #[async_std::test]
     async fn handler_none_static_config() {
-        let resp = request_handler(None, "/test/title").await;
-        assert_eq!(resp.status(), 500);
+        let handler = handler(None);
+        let mut conn = get("/test/title").on(&handler);
+        assert_status!(conn, 500);
+        assert_body_contains!(conn, r#""type":"/problem/config-invalid""#);
+        assert_headers!(conn, "content-type" => "application/problem+json");
+    }
+
+    #[async_std::test]
+    async fn handler_etag_match() {
+        let handler = handler(Some(TEST_TOML));
+        let conn = get("/test/title")
+            .with_request_header("If-None-Match", "W/\"test-etag\"")
+            .on(&handler);
+        assert_status!(conn, 304);
+        assert_headers!(
+            conn,
+            "Cache-Control" => "no-cache",
+            "Etag" => "W/\"test-etag\""
+        )
     }
 
     #[async_std::test]
     async fn handler_nonexistent_path() {
-        let mut resp = request_handler(Some(TEST_TOML), "/test/nonexistent").await;
-        assert_eq!(resp.status(), 404);
-        assert_eq!(
-            resp.body_string().await.unwrap(),
-            "Path was not found in configuration"
-        );
+        let handler = handler(Some(TEST_TOML));
+        let mut conn = get("/test/nonexistent").on(&handler);
+        assert_status!(conn, 404);
+        assert_body_contains!(conn, r#""type":"/problem/path-not-found""#);
+        assert_headers!(conn, "content-type" => "application/problem+json");
     }
 
     #[async_std::test]
     async fn handler_root_path() {
-        // let mut resp = app.get("/test/").await.unwrap();
-        // assert_eq!(resp.status(), 200);
-        // assert!(resp
-        //     .header("Content-Type")
-        //     .unwrap()
-        //     .contains(&mime::JSON.into()));
-        // let body_json: serde_json::Value = resp.body_json().await.unwrap();
-        // assert!(!body_json.as_object().unwrap().is_empty());
-        // TODO: replace below test case with the one above when tide matches
-        //       empty wildcard (v0.17.0).
-        let resp = request_handler(Some(TEST_TOML), "/test/").await;
-        assert_eq!(resp.status(), 404);
+        let handler = handler(Some(TEST_TOML));
+        let mut conn = get("/test/").on(&handler);
+        assert_status!(conn, 404);
+        assert_body_contains!(conn, r#""type":"/problem/path-not-found""#);
+        assert_headers!(conn, "content-type" => "application/problem+json");
     }
 
     #[async_std::test]
     async fn handler_string_value() {
-        let mut resp = request_handler(Some(TEST_TOML), "/test/title").await;
-        assert_eq!(resp.status(), 200);
-        assert!(resp
-            .header("Content-Type")
-            .unwrap()
-            .contains(&mime::JSON.into()));
-        assert_eq!(resp.body_string().await.unwrap(), r#""TOML example 😊""#);
+        let handler = handler(Some(TEST_TOML));
+        assert_response!(
+            get("/test/title").on(&handler),
+            200,
+            r#""TOML example 😊""#,
+            "Content-Type" => "application/json",
+            "Cache-Control" => "no-cache",
+            "Etag" => "W/\"test-etag\""
+        );
     }
 
     #[async_std::test]
     async fn handler_object_value() {
-        let mut resp = request_handler(Some(TEST_TOML), "/test/servers/alpha").await;
-        assert_eq!(resp.status(), 200);
-        assert!(resp
-            .header("Content-Type")
-            .unwrap()
-            .contains(&mime::JSON.into()));
-        assert_eq!(
-            resp.body_string().await.unwrap(),
-            r#"{"enabled":false,"hostname":"server1","ip":"10.0.0.1"}"#
+        let handler = handler(Some(TEST_TOML));
+        assert_response!(
+            get("/test/servers/alpha").on(&handler),
+            200,
+            r#"{"enabled":false,"hostname":"server1","ip":"10.0.0.1"}"#,
+            "Content-Type" => "application/json",
+            "Cache-Control" => "no-cache",
+            "Etag" => "W/\"test-etag\""
         );
     }
 

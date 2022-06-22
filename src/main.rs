@@ -1,3 +1,4 @@
+use std::net::SocketAddr;
 use std::path::Path;
 use std::time::{Duration, Instant};
 
@@ -7,11 +8,14 @@ use async_std::prelude::*;
 use async_std::sync::{Arc, RwLock};
 use async_std::task;
 use clap::Parser;
-use futures::future::{AbortHandle, Abortable, Aborted};
 use notify::{recommended_watcher, Event, RecursiveMode, Watcher};
 use signal_hook::consts::TERM_SIGNALS;
 use signal_hook::low_level::signal_name;
 use signal_hook_async_std::Signals;
+use trillium::{Conn, Handler, KnownHeaderName, State};
+use trillium_async_std::Stopper;
+use trillium_caching_headers::EntityTag;
+use trillium_router::Router;
 
 mod config;
 mod health;
@@ -19,15 +23,13 @@ mod health;
 use config::{handler as config_handler, load_config};
 use health::handler as health_handler;
 
-type StaticConfig = Arc<RwLock<Option<toml::Value>>>;
-
 #[derive(Parser)]
 #[clap(name = "Static configuration API")]
 #[clap(about)]
 struct Args {
     /// Address to listen on
     #[clap(env, long, default_value = "0.0.0.0:8080")]
-    listen_address: String,
+    listen_address: SocketAddr,
 
     /// Path of the static configuration TOML file
     #[clap(env, long)]
@@ -35,18 +37,26 @@ struct Args {
 }
 
 #[derive(Clone)]
-pub struct AppState {
-    static_config: StaticConfig,
+pub struct StaticConfig {
+    toml_value: toml::Value,
+    etag: EntityTag,
 }
 
-async fn handle_signals(mut signals: Signals, abort_handle: AbortHandle) {
+type SafeStaticConfig = Arc<RwLock<Option<StaticConfig>>>;
+
+#[derive(Clone)]
+pub struct AppState {
+    static_config: SafeStaticConfig,
+}
+
+async fn handle_signals(mut signals: Signals, stopper: Stopper) {
     while let Some(signal) = signals.next().await {
         let signame = signal_name(signal).unwrap_or("unknown");
         eprintln!(
             r#"from=handle_signal signal={} msg="received signal, exiting""#,
             signame
         );
-        abort_handle.abort();
+        stopper.stop();
     }
     eprintln!("from=handle_signal status=exiting");
 }
@@ -54,7 +64,7 @@ async fn handle_signals(mut signals: Signals, abort_handle: AbortHandle) {
 async fn handle_notify(
     mut rx: Receiver<notify::Result<Event>>,
     config_path: Arc<String>,
-    static_config: StaticConfig,
+    static_config: SafeStaticConfig,
 ) {
     while let Some(result) = rx.next().await {
         match result {
@@ -79,14 +89,25 @@ async fn handle_notify(
     eprintln!("from=handle_notify status=exiting");
 }
 
+async fn remove_server_header(mut conn: Conn) -> Conn {
+    conn.headers_mut().remove(KnownHeaderName::Server);
+    conn
+}
+
+fn router() -> impl Handler {
+    Router::new()
+        .get("/config/*", config_handler)
+        .get("/health", health_handler)
+}
+
 #[async_std::main]
 async fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
-    let (abort_handle, abort_registration) = AbortHandle::new_pair();
+    let trillium_stopper = trillium_async_std::Stopper::new();
     let signals = Signals::new(TERM_SIGNALS).context("error registering termination signals")?;
     let signals_handle = signals.handle();
-    let signal_task = task::spawn(handle_signals(signals, abort_handle));
+    let signal_task = task::spawn(handle_signals(signals, trillium_stopper.clone()));
 
     let static_config = Arc::new(RwLock::new(Some(
         load_config(&args.config_path)
@@ -117,16 +138,18 @@ async fn main() -> anyhow::Result<()> {
         .watch(Path::new(&args.config_path), RecursiveMode::NonRecursive)
         .context("error starting static configuration file watcher")?;
 
-    let mut app = tide::with_state(AppState { static_config });
-    app.at("/config/*path").get(config_handler);
-    app.at("/health").get(health_handler);
     eprintln!(r#"listen="{}" msg="start listening""#, args.listen_address);
-
-    let listen_future = Abortable::new(app.listen(args.listen_address), abort_registration);
-    match listen_future.await {
-        Err(Aborted) => Ok(()),
-        Ok(listen_result) => listen_result.context("listen error"),
-    }?;
+    trillium_async_std::config()
+        .with_host(&args.listen_address.ip().to_string())
+        .with_port(args.listen_address.port())
+        .without_signals()
+        .with_stopper(trillium_stopper)
+        .run_async((
+            State::new(AppState { static_config }),
+            remove_server_header,
+            router(),
+        ))
+        .await;
 
     notify_tx.close();
     signals_handle.close();
