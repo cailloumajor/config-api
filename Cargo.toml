@@ -1,6 +1,6 @@
 [package]
 name = "static_config_api"
-version = "1.2.0"
+version = "1.2.1"
 description = "Reads a TOML configuration file and serves it as JSON."
 authors = [ "Arnaud Rocher <arnaud.roche3@gmail.com>" ]
 edition = "2021"
