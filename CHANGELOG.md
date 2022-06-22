@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.2.0](https://github.com/cailloumajor/static-config-api/compare/v1.1.1...v1.2.0) (2022-06-22)
+
+
+### Features
+
+* implement etag-based caching for static config ([f0023b7](https://github.com/cailloumajor/static-config-api/commit/f0023b7ac2044d8571fb6fbe371b4f48bc1e1c3f))
+* implement http problem details ([26a097d](https://github.com/cailloumajor/static-config-api/commit/26a097d09425c4b5680a7aef68437b6e01d9804f))
+* make detail member optional ([2d84dbb](https://github.com/cailloumajor/static-config-api/commit/2d84dbb4befbc5176f1135a8294e8eddb683bbf2))
+* switch to trillium ([16187bc](https://github.com/cailloumajor/static-config-api/commit/16187bcb3e32a1bf036cf79dddf8ee6dbdeb00b1))
+* switch to trillium-client for health checking ([ad27f75](https://github.com/cailloumajor/static-config-api/commit/ad27f758dac6d15f5b93b710101227078f670a84))
+* use JSON pointer to get configuration subset ([bc492c6](https://github.com/cailloumajor/static-config-api/commit/bc492c614872fb7af569f94bf8b4c9f6ed64500b))
+
+
+### Bug Fixes
+
+* **deps:** update rust crate anyhow to 1.0.58 ([2647c62](https://github.com/cailloumajor/static-config-api/commit/2647c62df7c0e6519f29283ea9f060ab20a38692))
+* **deps:** update rust crate async-std to 1.12.0 ([f963a86](https://github.com/cailloumajor/static-config-api/commit/f963a86af6e3a84441680b2775dc91a5b19467be))
+* do not use compression ([c299761](https://github.com/cailloumajor/static-config-api/commit/c299761b7cde34237a0cb71a8d814c51d10366bc))
+* remove `Server` header from responses ([415dab1](https://github.com/cailloumajor/static-config-api/commit/415dab16a7673806c37b87906ac3d30a0e61e912))
+
 ## [1.1.1](https://github.com/cailloumajor/static-config-api/compare/v1.1.0...v1.1.1) (2022-06-16)
 
 
