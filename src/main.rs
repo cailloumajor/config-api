@@ -19,7 +19,6 @@ use trillium_router::Router;
 
 mod config;
 mod health;
-mod problem;
 
 use config::{handler as config_handler, load_config};
 use health::handler as health_handler;

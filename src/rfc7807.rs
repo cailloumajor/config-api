@@ -1,26 +1,14 @@
 use lazy_static::lazy_static;
-use serde::{Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 use trillium::{conn_try, Conn, KnownHeaderName, Status};
 
-struct StatusCode(Status);
-
-impl Serialize for StatusCode {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let value: u16 = self.0 as u16;
-        serializer.serialize_u16(value)
-    }
-}
-
 /// Represents problem details as of [RFC7807](https://datatracker.ietf.org/doc/html/rfc7807).
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize)]
 pub struct ProblemDetails {
     #[serde(rename = "type")]
     type_uri: String,
     title: String,
-    status: StatusCode,
+    status: u16,
     #[serde(skip_serializing_if = "Option::is_none")]
     detail: Option<String>,
 }
@@ -32,7 +20,7 @@ impl ProblemDetails {
         Self {
             type_uri,
             title: title.into(),
-            status: StatusCode(status),
+            status: status.into(),
             detail: Default::default(),
         }
     }
@@ -40,6 +28,14 @@ impl ProblemDetails {
     pub fn with_detail(mut self, detail: &str) -> Self {
         self.detail = Some(detail.into());
         self
+    }
+
+    pub fn title(&self) -> &str {
+        &self.title
+    }
+
+    pub fn status(&self) -> u16 {
+        self.status
     }
 }
 
@@ -59,7 +55,7 @@ pub trait ProblemDetailsConnExt {
 impl ProblemDetailsConnExt for Conn {
     fn with_problem_details(self, details: &ProblemDetails) -> Self {
         let body = conn_try!(serde_json::to_string(details), self);
-        self.with_status(details.status.0)
+        self.with_status(details.status)
             .with_header(KnownHeaderName::ContentType, "application/problem+json")
             .with_body(body)
             .halt()

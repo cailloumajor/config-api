@@ -7,7 +7,8 @@ use trillium_api::ApiConnExt;
 use trillium_caching_headers::{CacheControlDirective, CachingHeadersExt, EntityTag};
 use trillium_router::RouterConnExt;
 
-use crate::problem::{ProblemDetails, ProblemDetailsConnExt, PROBLEM_INVALID_CONFIG};
+use static_config_api::rfc7807::{ProblemDetails, ProblemDetailsConnExt, PROBLEM_INVALID_CONFIG};
+
 use crate::{AppState, StaticConfig};
 
 fn camel_case(source: &str) -> String {

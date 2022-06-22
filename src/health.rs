@@ -1,6 +1,7 @@
 use trillium::{Conn, Status};
 
-use crate::problem::{ProblemDetailsConnExt, PROBLEM_INVALID_CONFIG};
+use static_config_api::rfc7807::{ProblemDetailsConnExt, PROBLEM_INVALID_CONFIG};
+
 use crate::AppState;
 
 pub async fn handler(conn: Conn) -> Conn {
