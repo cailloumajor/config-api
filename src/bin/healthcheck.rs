@@ -13,6 +13,7 @@ type ClientConn = Conn<'static, TcpConnector>;
 #[clap(about = "Static config API health checking")]
 struct Args {
     /// Network port to use
+    #[clap(action)]
     port: u16,
 }
 

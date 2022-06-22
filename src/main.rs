@@ -28,11 +28,11 @@ use health::handler as health_handler;
 #[clap(about)]
 struct Args {
     /// Address to listen on
-    #[clap(env, long, default_value = "0.0.0.0:8080")]
+    #[clap(env, long, default_value = "0.0.0.0:8080", action)]
     listen_address: SocketAddr,
 
     /// Path of the static configuration TOML file
-    #[clap(env, long)]
+    #[clap(env, long, action)]
     config_path: String,
 }
 
