@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.2.2](https://github.com/cailloumajor/static-config-api/compare/v1.2.1...v1.2.2) (2022-07-05)
+
+
+### Bug Fixes
+
+* **deps:** update dependency rust to v1.62.0 ([a8a2482](https://github.com/cailloumajor/static-config-api/commit/a8a24822b63b67800ac2048d29a95a0baa359d3b))
+* **deps:** update rust crate clap to 3.2.8 ([604ef1b](https://github.com/cailloumajor/static-config-api/commit/604ef1b8b65e786343412b8c0c0c8ed8340006bb))
+* **deps:** update rust crate serde to 1.0.138 ([dadbb8b](https://github.com/cailloumajor/static-config-api/commit/dadbb8b8d500bd2b290c7fce884889541484bfbf))
+* **deps:** update rust crate serde_json to 1.0.82 ([ee439ab](https://github.com/cailloumajor/static-config-api/commit/ee439abfd3c382764cba59f644e64f2d61dab7df))
+* use bool::then_some ([45f8f76](https://github.com/cailloumajor/static-config-api/commit/45f8f76528b76c26635eb15bc4725bd869c0fdd2))
+
 ## [1.2.1](https://github.com/cailloumajor/static-config-api/compare/v1.2.0...v1.2.1) (2022-06-22)
 
 
