@@ -33,7 +33,7 @@ async fn main() -> anyhow::Result<()> {
     {
         problem = resp.response_json().await?;
     };
-    status.is_success().then(|| ()).ok_or_else(|| {
+    status.is_success().then_some(()).ok_or_else(|| {
         if let Some(p) = problem {
             anyhow!("status={} err={}", p.status(), p.title())
         } else {

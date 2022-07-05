@@ -29,7 +29,7 @@ mod tests {
     use crate::{AppState, StaticConfig};
 
     fn handler(with_static_config: bool) -> impl Handler {
-        let static_config = Arc::new(RwLock::new(with_static_config.then(|| StaticConfig {
+        let static_config = Arc::new(RwLock::new(with_static_config.then_some(StaticConfig {
             data: serde_json::Value::Bool(false),
             etag: EntityTag::weak(""),
         })));
