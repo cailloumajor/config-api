@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.3](https://github.com/cailloumajor/static-config-api/compare/v1.2.2...v1.2.3) (2022-07-11)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate serde to 1.0.139 ([dc9084d](https://github.com/cailloumajor/static-config-api/commit/dc9084d9659d17e8a2c46188c1c06667da38302e))
+* **deps:** update rust crate trillium to 0.2.3 ([3689ef3](https://github.com/cailloumajor/static-config-api/commit/3689ef392d008e7273c618b50369df790ff817c7))
+
 ## [1.2.2](https://github.com/cailloumajor/static-config-api/compare/v1.2.1...v1.2.2) (2022-07-05)
 
 
