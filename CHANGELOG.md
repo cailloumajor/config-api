@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.4](https://github.com/cailloumajor/static-config-api/compare/v1.2.3...v1.2.4) (2022-07-18)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate clap to 3.2.10 ([3ce1842](https://github.com/cailloumajor/static-config-api/commit/3ce1842a5ca355d35fa22517ee617837b978dfac))
+* **deps:** update rust crate clap to 3.2.12 ([78ea8a3](https://github.com/cailloumajor/static-config-api/commit/78ea8a3afbbdfe399ba9d472cd5dcfc58f679635))
+
 ## [1.2.3](https://github.com/cailloumajor/static-config-api/compare/v1.2.2...v1.2.3) (2022-07-11)
 
 
