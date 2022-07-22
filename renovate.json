@@ -10,7 +10,7 @@
         "automergeType": "branch"
       },
       {
-        "matchPackageNames": ["rust"],
+        "matchPackageNames": ["rust", "tonistiigi/xx"],
         "matchManagers": ["dockerfile"],
         "semanticCommitType": "fix"
       }
