@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.2.8](https://github.com/cailloumajor/static-config-api/compare/v1.2.7...v1.2.8) (2022-09-19)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate anyhow to 1.0.63 ([887c01e](https://github.com/cailloumajor/static-config-api/commit/887c01ef357d27db48227a7614cf0b90309e8bc7))
+* **deps:** update rust crate anyhow to 1.0.64 ([b04727c](https://github.com/cailloumajor/static-config-api/commit/b04727c708be93154c447e360f64ac8eb133a4c8))
+* **deps:** update rust crate anyhow to 1.0.65 ([b0f6277](https://github.com/cailloumajor/static-config-api/commit/b0f62771db3c2ec66752ee6478f8058122f15461))
+* **deps:** update rust crate clap to 3.2.20 ([c2b08d9](https://github.com/cailloumajor/static-config-api/commit/c2b08d94732424237e12d44ae88a1a693a9def0a))
+* **deps:** update rust crate clap to 3.2.22 ([43a277c](https://github.com/cailloumajor/static-config-api/commit/43a277cc5887d8f595b9b149c4e004874c1d0573))
+* **deps:** update rust crate serde to 1.0.144 ([9edca39](https://github.com/cailloumajor/static-config-api/commit/9edca39004496658704f35bb20673d9597b04716))
+* **deps:** update rust crate serde_json to 1.0.85 ([84b177f](https://github.com/cailloumajor/static-config-api/commit/84b177f6f35476e9ecbfe761f4d6b7d803cfb50e))
+* remove unneeded package install in build stage ([a89dbd6](https://github.com/cailloumajor/static-config-api/commit/a89dbd678b6b72e70679bd762dd07f9692e5f5ad))
+
 ## [1.2.7](https://github.com/cailloumajor/static-config-api/compare/v1.2.6...v1.2.7) (2022-08-17)
 
 
