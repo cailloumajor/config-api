@@ -19,7 +19,7 @@ RUN --mount=type=cache,target=/usr/local/cargo/git/db \
     --mount=type=cache,target=/usr/local/cargo/registry/index \
     --mount=type=cache,target=/usr/local/cargo/registry/cache \
     --mount=type=cache,sharing=private,target=/usr/src/app/target \
-    xx-apt-get install -y --no-install-recommends libssl-dev && \
+    apt-get update && \
     apt-get install -y --no-install-recommends "crossbuild-essential-$(xx-info debian-arch)" && \
     export RUST_TRIPLE="$(xx-info march)-unknown-$(xx-info os)-$(xx-info libc)" && \
     rustup target add "$RUST_TRIPLE" && \
