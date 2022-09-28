@@ -27,7 +27,7 @@ trillium-client = { version = "0.2.2", features = [ "json" ] }
 trillium-router = "0.3.3"
 
 [dev-dependencies]
-insta = "1.20.0"
+insta = "1.21.0"
 tempfile = "3.3.0"
 test-case = "2.2.1"
 trillium-testing = { version = "0.4.0", features = [ "async-std" ] }
