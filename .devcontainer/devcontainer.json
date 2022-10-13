@@ -1,45 +1,54 @@
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
-// https://github.com/microsoft/vscode-dev-containers/tree/v0.234.0/containers/rust
 {
-	"name": "Rust",
-	"build": {
-		"dockerfile": "Dockerfile"
-	},
-	"runArgs": [
-		"--cap-add=SYS_PTRACE",
-		"--security-opt",
-		"seccomp=unconfined"
-	],
+    "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",
 
-	// Set *default* container specific settings.json values on container create.
-	"settings": {
-		"[toml][rust]": {
-			"editor.formatOnSave": true
-		},
-		"lldb.executable": "/usr/bin/lldb",
-		// VS Code don't watch files under ./target
-		"files.watcherExclude": {
-			"**/target/**": true
-		},
-		"rust-analyzer.checkOnSave.command": "clippy"
-	},
+    "build": {
+        "args": {
+            "http_proxy": "${localEnv:http_proxy}",
+            "https_proxy": "${localEnv:https_proxy}",
+            "no_proxy": "${localEnv:no_proxy}"
+        },
+        "dockerfile": "./Dockerfile",
+        "context": "."
+    },
 
-	// Add the IDs of extensions you want installed when the container is created.
-	"extensions": [
-		"editorconfig.editorconfig",
-		"mutantdino.resourcemonitor",
-		"rust-lang.rust-analyzer",
-		"serayuzgur.crates",
-		"tamasfe.even-better-toml",
-		"vadimcn.vscode-lldb"
-	],
+    "containerEnv": {
+        "http_proxy": "${localEnv:http_proxy}",
+        "https_proxy": "${localEnv:https_proxy}",
+        "no_proxy": "${localEnv:no_proxy}"
+    },
 
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
+    "features": {
+        "ghcr.io/devcontainers/features/common-utils:1": {},
+        "ghcr.io/devcontainers/features/rust:1": {}
+    },
 
-	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "cargo install cargo-insta",
+    "overrideFeatureInstallOrder": [
+        "ghcr.io/devcontainers/features/common-utils"
+    ],
 
-	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-	"remoteUser": "vscode"
+    // Configure tool-specific properties.
+    "customizations": {
+        // Configure properties specific to VS Code.
+        "vscode": {
+            // Set *default* container specific settings.json values on container create.
+            "settings": {
+                "[toml][rust]": {
+                    "editor.formatOnSave": true
+                }
+            },
+            // Add the IDs of extensions you want installed when the container is created.
+            "extensions": [
+                "editorconfig.editorconfig"
+            ]
+        }
+    },
+
+    // Use 'forwardPorts' to make a list of ports inside the container available locally.
+    // "forwardPorts": [],
+
+    // Use 'postCreateCommand' to run commands after the container is created.
+    // "postCreateCommand": "rustc --version",
+
+    // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+    "remoteUser": "vscode"
 }
