@@ -9,11 +9,9 @@ use static_config_api::rfc7807::ProblemDetails;
 type ClientConn = Conn<'static, TcpConnector>;
 
 #[derive(Parser)]
-#[clap(name = "healthcheck")]
-#[clap(about = "Static config API health checking")]
 struct Args {
     /// Network port to use
-    #[clap(action)]
+    #[arg()]
     port: u16,
 }
 
