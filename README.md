@@ -8,19 +8,13 @@ Reads a TOML configuration file and serves it as JSON.
 
 ```ShellSession
 $ static_config_api --help
-Static configuration API 
-Reads a TOML configuration file and serves it as JSON.
+Usage: static_config_api [OPTIONS] --config-path <CONFIG_PATH>
 
-USAGE:
-    static_config_api [OPTIONS] --config-path <CONFIG_PATH>
-
-OPTIONS:
-        --config-path <CONFIG_PATH>
-            Path of the static configuration TOML file [env: CONFIG_PATH=]
-
-    -h, --help
-            Print help information
-
-        --listen-address <LISTEN_ADDRESS>
-            Address to listen on [env: LISTEN_ADDRESS=] [default: 0.0.0.0:8080]
+Options:
+      --listen-address <LISTEN_ADDRESS>
+          Address to listen on [env: LISTEN_ADDRESS=] [default: 0.0.0.0:8080]
+      --config-path <CONFIG_PATH>
+          Path of the static configuration TOML file [env: CONFIG_PATH=]
+  -h, --help
+          Print help information
 ```

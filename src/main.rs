@@ -24,15 +24,13 @@ use config::{handler as config_handler, load_config};
 use health::handler as health_handler;
 
 #[derive(Parser)]
-#[clap(name = "Static configuration API")]
-#[clap(about)]
 struct Args {
     /// Address to listen on
-    #[clap(env, long, default_value = "0.0.0.0:8080", action)]
+    #[arg(env, long, default_value = "0.0.0.0:8080", action)]
     listen_address: SocketAddr,
 
     /// Path of the static configuration TOML file
-    #[clap(env, long, action)]
+    #[arg(env, long, action)]
     config_path: String,
 }
 
