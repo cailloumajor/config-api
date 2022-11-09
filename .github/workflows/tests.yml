@@ -82,3 +82,5 @@ jobs:
         run: diff
           <(sed '1,/\$ static_config_api --help/d;/```/,$d' README.md)
           <(cargo run --quiet --bin static_config_api -- --help)
+      - name: Lint Dockerfile
+        uses: hadolint/hadolint-action@v2.1.0
