@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.2.11](https://github.com/cailloumajor/static-config-api/compare/v1.2.10...v1.2.11) (2022-12-16)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate clap to 4.0.23 ([c1c2caf](https://github.com/cailloumajor/static-config-api/commit/c1c2cafc8d0483e2b3608f562af7dcfc45fd1df0))
+* **deps:** update rust crate clap to 4.0.26 ([163c036](https://github.com/cailloumajor/static-config-api/commit/163c036aa523d5bbf259bff24de31963e0658fae))
+* **deps:** update rust crate clap to 4.0.29 ([39843ec](https://github.com/cailloumajor/static-config-api/commit/39843ec4fb21550dc5b3c6483adda498c99dfb7e))
+* **deps:** update rust crate serde to 1.0.149 ([9703046](https://github.com/cailloumajor/static-config-api/commit/9703046034ee288863e63f9317950d4018f77823))
+* **deps:** update rust crate serde to 1.0.150 ([f319cd1](https://github.com/cailloumajor/static-config-api/commit/f319cd15271e9b71cabadbd2596ba4345a3c9ed9))
+* **deps:** update rust crate serde_json to 1.0.88 ([f0cf0e4](https://github.com/cailloumajor/static-config-api/commit/f0cf0e423510ac5bd6805e5c3b5d99faef541e6f))
+* **deps:** update rust crate serde_json to 1.0.89 ([bfae3f3](https://github.com/cailloumajor/static-config-api/commit/bfae3f3f07dd34954298f6e074fe928a61c52a26))
+* **deps:** update rust crate toml to 0.5.10 ([ec454cb](https://github.com/cailloumajor/static-config-api/commit/ec454cbb7b8186abd73f0cc7916776c1f6245906))
+* **deps:** update rust docker tag to v1.66.0 ([b8c3847](https://github.com/cailloumajor/static-config-api/commit/b8c3847e5e3d9b0ef6b8af32dd1ecaabdd20ab7c))
+
 ## [1.2.10](https://github.com/cailloumajor/static-config-api/compare/v1.2.9...v1.2.10) (2022-11-11)
 
 
