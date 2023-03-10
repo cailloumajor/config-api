@@ -309,9 +309,9 @@ dependencies = [
 
 [[package]]
 name = "etag"
-version = "3.0.0"
+version = "4.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aec9f8918ec91bd35f3068e33da01b72a295ac8a7baacb0290b56ffeeec9d88f"
+checksum = "4b3d0661a2ccddc26cba0b834e9b717959ed6fdd76c7129ee159c170a875bf44"
 dependencies = [
  "str-buf",
  "xxhash-rust",
@@ -1089,9 +1089,9 @@ dependencies = [
 
 [[package]]
 name = "str-buf"
-version = "2.0.5"
+version = "3.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0873cb29201126440dcc78d0b1f5a13d917e78831778429a7920ca9c7f3dae1e"
+checksum = "e75b72ee54e2f93c3ea1354066162be893ee5e25773ab743de3e088cecbb4f31"
 
 [[package]]
 name = "syn"
@@ -1251,9 +1251,9 @@ dependencies = [
 
 [[package]]
 name = "trillium-caching-headers"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0d1cc9754005a2ad9396f696fc5d9b4c7faa5a091944314b4b195ebc4869e14d"
+checksum = "7bc2219c6c5d6bbae9ea2bbf8d66338abfd30a8277ff73ec445c8f924e600922"
 dependencies = [
  "etag",
  "httpdate",
@@ -1675,9 +1675,9 @@ dependencies = [
 
 [[package]]
 name = "xxhash-rust"
-version = "0.8.5"
+version = "0.8.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "074914ea4eec286eb8d1fd745768504f420a1f7b7919185682a4a267bed7d2e7"
+checksum = "735a71d46c4d68d71d4b24d03fdc2b98e38cea81730595801db779c04fe80d70"
 
 [[package]]
 name = "yaml-rust"

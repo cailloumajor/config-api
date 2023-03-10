@@ -21,7 +21,7 @@ toml = "0.7.2"
 trillium = "0.2.3"
 trillium-api = "0.1.0"
 trillium-async-std = "0.2.0"
-trillium-caching-headers = "0.1.0"
+trillium-caching-headers = "0.2.0"
 trillium-client = { version = "0.2.2", features = [ "json" ] }
 trillium-router = "0.3.4"
 
@@ -31,7 +31,7 @@ default-features = false
 features = [ "std", "help", "usage", "error-context", "derive", "env" ]
 
 [dev-dependencies]
-insta = "1.28.0"
+insta = "1.26.0"
 tempfile = "3.3.0"
 test-case = "2.2.2"
 trillium-testing = { version = "0.4.0", features = [ "async-std" ] }
