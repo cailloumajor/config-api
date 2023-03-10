@@ -2,4 +2,5 @@
 
 !Cargo.lock
 !Cargo.toml
+!install-cross-deps.sh
 !src/
