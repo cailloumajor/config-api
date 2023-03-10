@@ -31,7 +31,7 @@ default-features = false
 features = [ "std", "help", "usage", "error-context", "derive", "env" ]
 
 [dev-dependencies]
-insta = "1.26.0"
+insta = "1.28.0"
 tempfile = "3.3.0"
 test-case = "2.2.2"
 trillium-testing = { version = "0.4.0", features = [ "async-std" ] }
