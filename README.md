@@ -16,5 +16,5 @@ Options:
       --config-path <CONFIG_PATH>
           Path of the static configuration TOML file [env: CONFIG_PATH=]
   -h, --help
-          Print help information
+          Print help
 ```
