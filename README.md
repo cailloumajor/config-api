@@ -7,8 +7,8 @@ Reads a TOML configuration file and serves it as JSON.
 ## Usage
 
 ```ShellSession
-$ static_config_api --help
-Usage: static_config_api [OPTIONS] --config-path <CONFIG_PATH>
+$ static-config-api --help
+Usage: static-config-api [OPTIONS] --config-path <CONFIG_PATH>
 
 Options:
       --listen-address <LISTEN_ADDRESS>

@@ -46,8 +46,8 @@ jobs:
       - name: Check command usage in README.md
         # Thanks to https://unix.stackexchange.com/a/17405
         run: diff
-          <(sed '1,/\$ static_config_api --help/d;/```/,$d' README.md)
-          <(cargo run --quiet --bin static_config_api -- --help)
+          <(sed '1,/\$ static-config-api --help/d;/```/,$d' README.md)
+          <(cargo run --quiet --bin static-config-api -- --help)
       - name: Install grcov
         run: cargo install grcov
       - name: Run unit tests

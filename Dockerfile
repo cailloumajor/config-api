@@ -39,4 +39,4 @@ HEALTHCHECK CMD ["/usr/local/bin/healthcheck", "8080"]
 
 USER nonroot
 EXPOSE 8080
-CMD ["/usr/local/bin/static_config_api"]
+CMD ["/usr/local/bin/static-config-api"]
