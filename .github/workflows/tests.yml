@@ -43,6 +43,11 @@ jobs:
         run: cargo fmt --all -- --check
       - name: Lint code with Clippy
         run: cargo clippy -- -D warnings
+      - name: Check command usage in README.md
+        # Thanks to https://unix.stackexchange.com/a/17405
+        run: diff
+          <(sed '1,/\$ static_config_api --help/d;/```/,$d' README.md)
+          <(cargo run --quiet --bin static_config_api -- --help)
       - name: Install grcov
         run: cargo install grcov
       - name: Run unit tests
@@ -67,11 +72,12 @@ jobs:
           fail_ci_if_error: true
           files: lcov.info
           flags: unittests
-      - run: cargo build
-      - name: Check command usage in README.md
-        # Thanks to https://unix.stackexchange.com/a/17405
-        run: diff
-          <(sed '1,/\$ static_config_api --help/d;/```/,$d' README.md)
-          <(cargo run --quiet --bin static_config_api -- --help)
+  integration:
+    name: Integration tests
+    runs-on: ubuntu-22.04
+    needs: pre_job
+    if: needs.pre_job.outputs.should_skip != 'true'
+    steps:
+      - uses: actions/checkout@v3
       - name: Lint Dockerfile
         uses: hadolint/hadolint-action@v3.1.0
