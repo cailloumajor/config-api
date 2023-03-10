@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.12](https://github.com/cailloumajor/static-config-api/compare/v1.2.11...v1.2.12) (2023-03-10)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate anyhow to 1.0.69 ([a12bfc7](https://github.com/cailloumajor/static-config-api/commit/a12bfc719ff8b1f182c023d5d8c9ba9b3837475f))
+* **deps:** update rust crate serde to 1.0.154 ([36fee84](https://github.com/cailloumajor/static-config-api/commit/36fee847643b2c9ff7664bc3e73091e7d905683c))
+* **deps:** update rust crate serde_json to 1.0.94 ([5afc725](https://github.com/cailloumajor/static-config-api/commit/5afc7252f80ee4f2395a6f1683c1fe93f89ba829))
+* **deps:** update rust docker tag to v1.68.0 ([c98592b](https://github.com/cailloumajor/static-config-api/commit/c98592bcbce557685d12a7ddb750b790f5fcc81c))
+* **deps:** update tonistiigi/xx docker tag to v1.2.1 ([c565b98](https://github.com/cailloumajor/static-config-api/commit/c565b98f6c6e0d7d080c62ae2f5e339aa1847341))
+* use xx-cargo ([945ef46](https://github.com/cailloumajor/static-config-api/commit/945ef460218dbec009c5eee04db99cb213302e0e))
+
 ## [1.2.11](https://github.com/cailloumajor/static-config-api/compare/v1.2.10...v1.2.11) (2022-12-16)
 
 
