@@ -1304,9 +1304,9 @@ dependencies = [
 
 [[package]]
 name = "trillium-caching-headers"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7bc2219c6c5d6bbae9ea2bbf8d66338abfd30a8277ff73ec445c8f924e600922"
+checksum = "babb5b0bd26ae31576f0d4fa2591459a7098a021cf93f69fe6c3f2937d8f0a03"
 dependencies = [
  "etag",
  "httpdate",
