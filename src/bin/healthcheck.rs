@@ -20,7 +20,7 @@ async fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
     let url = format!("http://127.0.0.1:{}/health", args.port);
-    let mut resp = ClientConn::get(url.as_str()).execute().await?;
+    let mut resp = ClientConn::get(url.as_str()).await?;
     let status = resp.status().unwrap();
     let mut problem: Option<ProblemDetails> = None;
     if let Some(true) = resp
