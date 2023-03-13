@@ -97,11 +97,9 @@ pub async fn handler(mut conn: Conn) -> Conn {
 #[cfg(test)]
 mod tests {
     use std::io::Write;
-    use std::path::Path;
 
     use async_std::sync::{Arc, RwLock};
     use tempfile::NamedTempFile;
-    use test_case::test_case;
     use trillium::{Handler, State};
     use trillium_caching_headers::EntityTag;
     use trillium_router::Router;
@@ -109,35 +107,118 @@ mod tests {
 
     use crate::{AppState, StaticConfig};
 
+    use super::*;
+
     macro_rules! tests_fixtures_dir {
         () => {
             concat!(env!("CARGO_MANIFEST_DIR"), "/tests/")
         };
     }
 
-    const SNAPSHOTS_DIR: &str = concat!(tests_fixtures_dir!(), "snapshots");
     const TEST_TOML_PATH: &str = concat!(tests_fixtures_dir!(), "test.toml");
     const TEST_JSON: &str = include_str!("../tests/test.json");
-    const TEST_TOML: &str = include_str!("../tests/test.toml");
 
-    #[test_case("oneword" => "oneword")]
-    #[test_case("camelCase" => "camelCase")]
-    #[test_case("space separated" => "spaceSeparated")]
-    #[test_case("underscore_separated" => "underscoreSeparated")]
-    #[test_case("multiple   spaces" => "multipleSpaces")]
-    #[test_case("   spaces_underscores_mixed" => "spacesUnderscoresMixed")]
-    fn camel_case(src: &str) -> String {
-        super::camel_case(src)
+    mod camel_case {
+        use super::*;
+
+        #[test]
+        fn one_word() {
+            let result = camel_case("oneword");
+            assert_eq!(result, "oneword");
+        }
+
+        #[test]
+        fn already_camel_case() {
+            let result = camel_case("camelCase");
+            assert_eq!(result, "camelCase");
+        }
+
+        #[test]
+        fn space_separated() {
+            let result = camel_case("space separated");
+            assert_eq!(result, "spaceSeparated");
+        }
+
+        #[test]
+        fn underscore_separated() {
+            let result = camel_case("underscore_separated");
+            assert_eq!(result, "underscoreSeparated");
+        }
+
+        #[test]
+        fn multiple_spaces() {
+            let result = camel_case("multiple   spaces");
+            assert_eq!(result, "multipleSpaces");
+        }
+
+        #[test]
+        fn mixed_spaces_underscores() {
+            let result = camel_case("   spaces_underscores_mixed");
+            assert_eq!(result, "spacesUnderscoresMixed");
+        }
     }
 
-    #[test]
-    fn toml_to_json() {
-        let toml_value = TEST_TOML.parse().unwrap();
-        let json_value = super::toml_to_json(&toml_value);
-        let pretty_json = format!("{:#}", json_value);
-        insta::with_settings!({snapshot_path => Path::new(SNAPSHOTS_DIR)}, {
-            insta::assert_snapshot!(pretty_json);
-        });
+    mod toml_to_json {
+        use std::collections::HashMap;
+
+        use toml::value::Datetime;
+
+        use super::*;
+
+        #[test]
+        fn string() {
+            let json_value = toml_to_json(&"some_string".to_string().into());
+            assert_eq!(json_value.as_str().unwrap(), "some string");
+        }
+
+        #[test]
+        fn integer() {
+            let json_value = toml_to_json(&42.into());
+            assert_eq!(json_value.as_i64().unwrap(), 42);
+        }
+
+        #[test]
+        fn normal_float() {
+            let json_value = toml_to_json(&(37.5).into());
+            assert_eq!(json_value.as_f64().unwrap(), 37.5);
+        }
+
+        #[test]
+        fn anormal_float() {
+            let json_value = toml_to_json(&f64::NAN.into());
+            assert!(json_value.as_null().is_some());
+        }
+
+        #[test]
+        fn boolean() {
+            let json_value = toml_to_json(&true.into());
+            assert_eq!(json_value.as_bool().unwrap(), true);
+        }
+
+        #[test]
+        fn datetime() {
+            let dt = "1984-12-09T04:30:00Z".parse::<Datetime>().unwrap();
+            let json_value = toml_to_json(&dt.into());
+            assert_eq!(json_value.as_str().unwrap(), "1984-12-09T04:30:00Z");
+        }
+
+        #[test]
+        fn array() {
+            let json_value = toml_to_json(&vec![true].into());
+            assert_eq!(json_value.as_array().unwrap()[0].as_bool().unwrap(), true);
+        }
+
+        #[test]
+        fn table() {
+            let map = HashMap::from([("some_key", true)]);
+            let json_value = toml_to_json(&map.into());
+            assert_eq!(
+                json_value.as_object().unwrap()["someKey"]
+                    .as_bool()
+                    .unwrap(),
+                true
+            );
+        }
     }
 
     fn handler(json_config: Option<&str>) -> impl Handler {
