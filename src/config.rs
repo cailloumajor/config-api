@@ -168,7 +168,7 @@ mod tests {
         #[test]
         fn string() {
             let json_value = toml_to_json(&"some_string".to_string().into());
-            assert_eq!(json_value.as_str().unwrap(), "some string");
+            assert_eq!(json_value.as_str().unwrap(), "some_string");
         }
 
         #[test]
