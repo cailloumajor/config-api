@@ -11,7 +11,6 @@ edition = "2021"
 anyhow = "1.0.69"
 async-std = { version = "1.12.0", features = [ "attributes" ] }
 lazy_static = "1.4.0"
-mime = "0.3.16"
 notify = "5.0.0"
 serde = { version = "1.0.155", features = [ "derive" ] }
 serde_json = "1.0.94"
