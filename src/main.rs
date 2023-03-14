@@ -1,4 +1,3 @@
-use std::net::SocketAddr;
 use std::path::Path;
 use std::time::{Duration, Instant};
 
@@ -17,6 +16,8 @@ use trillium_async_std::Stopper;
 use trillium_caching_headers::EntityTag;
 use trillium_router::Router;
 
+use static_config_api::CommonArgs;
+
 mod config;
 mod health;
 
@@ -25,12 +26,11 @@ use health::handler as health_handler;
 
 #[derive(Parser)]
 struct Args {
-    /// Address to listen on
-    #[arg(env, long, default_value = "0.0.0.0:8080", action)]
-    listen_address: SocketAddr,
+    #[command(flatten)]
+    common: CommonArgs,
 
     /// Path of the static configuration TOML file
-    #[arg(env, long, action)]
+    #[arg(env, long)]
     config_path: String,
 }
 
@@ -136,10 +136,13 @@ async fn main() -> anyhow::Result<()> {
         .watch(Path::new(&args.config_path), RecursiveMode::NonRecursive)
         .context("error starting static configuration file watcher")?;
 
-    eprintln!(r#"listen="{}" msg="start listening""#, args.listen_address);
+    eprintln!(
+        r#"listen="{}" msg="start listening""#,
+        args.common.listen_address
+    );
     trillium_async_std::config()
-        .with_host(&args.listen_address.ip().to_string())
-        .with_port(args.listen_address.port())
+        .with_host(&args.common.listen_address.ip().to_string())
+        .with_port(args.common.listen_address.port())
         .without_signals()
         .with_stopper(trillium_stopper)
         .run_async((

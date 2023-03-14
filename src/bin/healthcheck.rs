@@ -5,21 +5,25 @@ use trillium_async_std::TcpConnector;
 use trillium_client::Conn;
 
 use static_config_api::rfc7807::ProblemDetails;
+use static_config_api::CommonArgs;
 
 type ClientConn = Conn<'static, TcpConnector>;
 
 #[derive(Parser)]
 struct Args {
-    /// Network port to use
-    #[arg()]
-    port: u16,
+    #[command(flatten)]
+    common: CommonArgs,
 }
 
 #[async_std::main]
 async fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
-    let url = format!("http://127.0.0.1:{}/health", args.port);
+    let url = format!(
+        "http://127.0.0.1:{}/health",
+        args.common.listen_address.port()
+    );
+
     let mut resp = ClientConn::get(url.as_str()).await?;
     let status = resp.status().unwrap();
     let mut problem: Option<ProblemDetails> = None;
