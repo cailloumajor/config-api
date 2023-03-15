@@ -16,7 +16,7 @@ serde = { version = "1.0.155", features = [ "derive" ] }
 serde_json = "1.0.94"
 signal-hook = "0.3.15"
 signal-hook-async-std = "0.2.2"
-toml = "0.7.2"
+toml = "0.7.3"
 trillium = "0.2.6"
 trillium-api = "0.1.0"
 trillium-async-std = "0.2.0"
