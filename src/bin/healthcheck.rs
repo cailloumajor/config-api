@@ -1,9 +1,9 @@
 use anyhow::{anyhow, Context as _};
 use clap::Parser;
-use trillium_async_std::TcpConnector;
 use trillium_client::Conn;
+use trillium_tokio::TcpConnector;
 
-use static_config_api::CommonArgs;
+use config_api::CommonArgs;
 
 type ClientConn = Conn<'static, TcpConnector>;
 
@@ -13,7 +13,7 @@ struct Args {
     common: CommonArgs,
 }
 
-#[async_std::main]
+#[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 

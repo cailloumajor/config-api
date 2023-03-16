@@ -35,8 +35,8 @@ WORKDIR /app
 
 COPY --from=builder /usr/src/app/bin/* /usr/local/bin/
 
-HEALTHCHECK CMD ["/usr/local/bin/healthcheck", "8080"]
+HEALTHCHECK CMD ["/usr/local/bin/healthcheck"]
 
 USER nonroot
 EXPOSE 8080
-CMD ["/usr/local/bin/static-config-api"]
+CMD ["/usr/local/bin/config-api"]

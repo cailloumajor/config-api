@@ -1,14 +1,62 @@
-# Static configuration API
+<!-- markdownlint-configure-file
+{
+    "no-duplicate-header": {
+        "siblings_only": true
+    }
+}
+-->
+
+# Configuration API microservice
 
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
 
-Reads a TOML configuration file and serves it as JSON.
+Microservice serving configuration data as an HTTP API backed by MongoDB.
+
+## Routes
+
+### Health
+
+#### `GET` `/health`
+
+Returns the service health status.
+
+##### Parameters
+
+None
+
+##### Response
+
+| Code | Description          |
+| ---- | -------------------- |
+| 204  | Service is healthy   |
+| 500  | Service in unhealthy |
+
+### Configuration data
+
+#### `GET` `/config/{collection}/{id}`
+
+Returns configuration data.
+
+##### Parameters
+
+| Name                | Description                |
+| ------------------- | -------------------------- |
+| collection _(path)_ | MongoDB collection         |
+| id _(path)_         | ID of the MongoDB document |
+
+##### Response
+
+| Code | Description             |
+| ---- | ----------------------- |
+| 200  | Document in JSON format |
+| 400  | Document not found      |
+| 500  | Internal server error   |
 
 ## Usage
 
 ```ShellSession
-$ static-config-api --help
-Usage: static-config-api [OPTIONS] --config-path <CONFIG_PATH>
+$ config-api --help
+Usage: config-api [OPTIONS] --config-path <CONFIG_PATH>
 
 Options:
       --listen-address <LISTEN_ADDRESS>
