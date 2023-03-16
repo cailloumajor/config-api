@@ -1,5 +1,32 @@
 # Changelog
 
+## [1.2.12](https://github.com/cailloumajor/static-config-api/compare/v1.2.11...v1.2.12) (2023-03-16)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate anyhow to 1.0.69 ([a12bfc7](https://github.com/cailloumajor/static-config-api/commit/a12bfc719ff8b1f182c023d5d8c9ba9b3837475f))
+* **deps:** update rust crate clap to 4.1.8 ([c0fd60f](https://github.com/cailloumajor/static-config-api/commit/c0fd60f8ea292581bc31bbf1f5ea0a55003b317d))
+* **deps:** update rust crate serde to 1.0.154 ([36fee84](https://github.com/cailloumajor/static-config-api/commit/36fee847643b2c9ff7664bc3e73091e7d905683c))
+* **deps:** update rust crate serde to 1.0.155 ([308b81c](https://github.com/cailloumajor/static-config-api/commit/308b81cb8797b97f7d842b98cf7c49a076fc04db))
+* **deps:** update rust crate serde_json to 1.0.94 ([5afc725](https://github.com/cailloumajor/static-config-api/commit/5afc7252f80ee4f2395a6f1683c1fe93f89ba829))
+* **deps:** update rust crate signal-hook to 0.3.15 ([3449f2c](https://github.com/cailloumajor/static-config-api/commit/3449f2c28213ba4bcedc0cbad1f13f7f90bb347d))
+* **deps:** update rust crate toml to 0.7.2 ([685ce12](https://github.com/cailloumajor/static-config-api/commit/685ce12c5965ff7712cbd7428e38888561ff9a8b))
+* **deps:** update rust crate trillium to 0.2.6 ([8e7ac0c](https://github.com/cailloumajor/static-config-api/commit/8e7ac0ca6df4c808b0ccdcbc19fd1f6878cc01fe))
+* **deps:** update rust crate trillium-caching-headers to 0.2.0 ([84a6b2b](https://github.com/cailloumajor/static-config-api/commit/84a6b2b2c974446982eeac1d37287b839bc15400))
+* **deps:** update rust crate trillium-caching-headers to 0.2.1 ([813fb55](https://github.com/cailloumajor/static-config-api/commit/813fb55a26adae7f00aa8700f8cb05dc1ac10609))
+* **deps:** update rust crate trillium-client to 0.3.0 ([6e58489](https://github.com/cailloumajor/static-config-api/commit/6e584894e3af0878a1d836bf1b5a552e43b557b1))
+* **deps:** update rust crate trillium-router to 0.3.4 ([a308d1a](https://github.com/cailloumajor/static-config-api/commit/a308d1a47157bc24f8ed3ff092f0be99f973390f))
+* **deps:** update rust docker tag to v1.68.0 ([c98592b](https://github.com/cailloumajor/static-config-api/commit/c98592bcbce557685d12a7ddb750b790f5fcc81c))
+* **deps:** update tonistiigi/xx docker tag to v1.2.1 ([c565b98](https://github.com/cailloumajor/static-config-api/commit/c565b98f6c6e0d7d080c62ae2f5e339aa1847341))
+* do not decode response contents in healthcheck ([6acd258](https://github.com/cailloumajor/static-config-api/commit/6acd2580015b1ff1d20c1b0ed6bfaeff03c59123))
+* follow changes in clap 4.1 ([3cf9b4b](https://github.com/cailloumajor/static-config-api/commit/3cf9b4be14485cc64293f5bee5da248659c3a2d3))
+* trillium-client v0.3.0 breaking changes ([2123592](https://github.com/cailloumajor/static-config-api/commit/2123592c1c7f67a54505e781c8823fa153f63a19))
+* update routefinder transitive dependency ([6dc0a18](https://github.com/cailloumajor/static-config-api/commit/6dc0a18480c193d10d3524b7f48d125cb68868b5))
+* update transitive dependencies ([e47cd8a](https://github.com/cailloumajor/static-config-api/commit/e47cd8ab64a39b23bd8594995e91ba9ed7a123dc))
+* use common arguments ([ec7415f](https://github.com/cailloumajor/static-config-api/commit/ec7415f481edb48d1ecf51f7359ea5f9470b8d75))
+* use xx-cargo ([945ef46](https://github.com/cailloumajor/static-config-api/commit/945ef460218dbec009c5eee04db99cb213302e0e))
+
 ## [1.2.11](https://github.com/cailloumajor/static-config-api/compare/v1.2.10...v1.2.11) (2022-12-16)
 
 

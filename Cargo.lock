@@ -1043,7 +1043,7 @@ dependencies = [
 
 [[package]]
 name = "static-config-api"
-version = "1.2.11"
+version = "1.2.12"
 dependencies = [
  "anyhow",
  "async-std",
