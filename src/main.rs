@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use anyhow::Context;
 use clap::Parser;
 use clap_verbosity_flag::{InfoLevel, LogLevel, Verbosity};
@@ -10,6 +12,7 @@ use tracing_log::LogTracer;
 use trillium_tokio::Stopper;
 
 use config_api::CommonArgs;
+use db::Database;
 
 mod db;
 mod http_api;
@@ -66,11 +69,14 @@ async fn main() -> anyhow::Result<()> {
 
     let signals = Signals::new(TERM_SIGNALS).context("error registering termination signals")?;
     let signals_handle = signals.handle();
-    let signal_task = tokio::spawn(handle_signals(signals, api_stopper.clone()));
+    let signals_task = tokio::spawn(handle_signals(signals, api_stopper.clone()));
 
-    let mongodb_database = db::get_database(&args.mongodb).await?;
+    let database = Database::create(&args.mongodb).await?;
+    let database = Arc::new(database);
+    let (database_health_tx, database_health_task) = database.clone().handle_health();
+    let (get_config_tx, get_config_task) = database.handle_get_config();
 
-    let api_handler = http_api::handler(mongodb_database);
+    let api_handler = http_api::handler(database_health_tx, get_config_tx);
     async move {
         info!(addr = %args.common.listen_address, msg = "start litening");
         trillium_tokio::config()
@@ -87,8 +93,7 @@ async fn main() -> anyhow::Result<()> {
 
     signals_handle.close();
 
-    signal_task
-        .await
+    tokio::try_join!(signals_task, database_health_task, get_config_task)
         .context("error joining signals handling task")?;
 
     Ok(())
