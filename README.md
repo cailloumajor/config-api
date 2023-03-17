@@ -56,13 +56,19 @@ Returns configuration data.
 
 ```ShellSession
 $ config-api --help
-Usage: config-api [OPTIONS] --config-path <CONFIG_PATH>
+Usage: config-api [OPTIONS] --mongodb-database <MONGODB_DATABASE>
 
 Options:
       --listen-address <LISTEN_ADDRESS>
           Address to listen on [env: LISTEN_ADDRESS=] [default: 0.0.0.0:8080]
-      --config-path <CONFIG_PATH>
-          Path of the static configuration TOML file [env: CONFIG_PATH=]
+      --mongodb-uri <MONGODB_URI>
+          URI of MongoDB server [env: MONGODB_URI=] [default: mongodb://mongodb]
+      --mongodb-database <MONGODB_DATABASE>
+          MongoDB database [env: MONGODB_DATABASE=]
+  -v, --verbose...
+          More output per occurrence
+  -q, --quiet...
+          Less output per occurrence
   -h, --help
           Print help
 ```
