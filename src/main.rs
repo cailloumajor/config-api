@@ -78,7 +78,7 @@ async fn main() -> anyhow::Result<()> {
 
     let api_handler = http_api::handler(database_health_tx, get_config_tx);
     async move {
-        info!(addr = %args.common.listen_address, msg = "start litening");
+        info!(addr = %args.common.listen_address, msg = "start listening");
         trillium_tokio::config()
             .with_host(&args.common.listen_address.ip().to_string())
             .with_port(args.common.listen_address.port())
