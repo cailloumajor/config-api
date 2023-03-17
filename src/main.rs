@@ -1,161 +1,100 @@
-use std::path::Path;
-use std::time::{Duration, Instant};
+use std::sync::Arc;
 
 use anyhow::Context;
-use async_std::channel::{self, Receiver};
-use async_std::prelude::*;
-use async_std::sync::{Arc, RwLock};
-use async_std::task;
 use clap::Parser;
-use notify::{recommended_watcher, Event, RecursiveMode, Watcher};
+use clap_verbosity_flag::{InfoLevel, LogLevel, Verbosity};
+use futures_util::StreamExt;
 use signal_hook::consts::TERM_SIGNALS;
 use signal_hook::low_level::signal_name;
-use signal_hook_async_std::Signals;
-use trillium::{Conn, Handler, KnownHeaderName, State};
-use trillium_async_std::Stopper;
-use trillium_caching_headers::EntityTag;
-use trillium_router::Router;
+use signal_hook_tokio::Signals;
+use tracing::{info, info_span, instrument, Instrument};
+use tracing_log::LogTracer;
+use trillium_tokio::Stopper;
 
-use static_config_api::CommonArgs;
+use config_api::CommonArgs;
+use db::Database;
 
-mod config;
-mod health;
-
-use config::{handler as config_handler, load_config};
-use health::handler as health_handler;
+mod db;
+mod http_api;
 
 #[derive(Parser)]
 struct Args {
     #[command(flatten)]
     common: CommonArgs,
 
-    /// Path of the static configuration TOML file
-    #[arg(env, long)]
-    config_path: String,
+    #[command(flatten)]
+    mongodb: db::Config,
+
+    #[command(flatten)]
+    verbose: Verbosity<InfoLevel>,
 }
 
-#[derive(Clone)]
-pub struct StaticConfig {
-    data: serde_json::Value,
-    etag: EntityTag,
+fn filter_from_verbosity<T>(verbosity: &Verbosity<T>) -> tracing::level_filters::LevelFilter
+where
+    T: LogLevel,
+{
+    use tracing_log::log::LevelFilter;
+    match verbosity.log_level_filter() {
+        LevelFilter::Off => tracing::level_filters::LevelFilter::OFF,
+        LevelFilter::Error => tracing::level_filters::LevelFilter::ERROR,
+        LevelFilter::Warn => tracing::level_filters::LevelFilter::WARN,
+        LevelFilter::Info => tracing::level_filters::LevelFilter::INFO,
+        LevelFilter::Debug => tracing::level_filters::LevelFilter::DEBUG,
+        LevelFilter::Trace => tracing::level_filters::LevelFilter::TRACE,
+    }
 }
 
-type SafeStaticConfig = Arc<RwLock<Option<StaticConfig>>>;
-
-#[derive(Clone)]
-pub struct AppState {
-    static_config: SafeStaticConfig,
-}
-
-async fn handle_signals(mut signals: Signals, stopper: Stopper) {
-    while let Some(signal) = signals.next().await {
-        let signame = signal_name(signal).unwrap_or("unknown");
-        eprintln!(
-            r#"from=handle_signal signal={} msg="received signal, exiting""#,
-            signame
-        );
+#[instrument(skip_all)]
+async fn handle_signals(signals: Signals, stopper: Stopper) {
+    let mut signals_stream = signals.map(|signal| signal_name(signal).unwrap_or("unknown"));
+    info!(status = "started");
+    while let Some(signal) = signals_stream.next().await {
+        info!(msg = "received signal", reaction = "shutting down", signal);
         stopper.stop();
     }
-    eprintln!("from=handle_signal status=exiting");
+    info!(status = "terminating");
 }
 
-async fn handle_notify(
-    mut rx: Receiver<notify::Result<Event>>,
-    config_path: Arc<String>,
-    static_config: SafeStaticConfig,
-) {
-    while let Some(result) = rx.next().await {
-        match result {
-            Ok(event) => {
-                if event.kind.is_modify() {
-                    eprintln!(r#"from=handle_notify msg="reloading configuration""#);
-                    let mut config_write = static_config.write().await;
-                    match load_config(&config_path).await {
-                        Ok(new_config) => {
-                            *config_write = Some(new_config);
-                        }
-                        Err(err) => {
-                            *config_write = None;
-                            eprintln!("from=handle_notify during=load_config err={err}");
-                        }
-                    }
-                }
-            }
-            Err(err) => eprintln!("from=handle_notify during=match_result err={err}"),
-        }
-    }
-    eprintln!("from=handle_notify status=exiting");
-}
-
-async fn remove_server_header(mut conn: Conn) -> Conn {
-    conn.headers_mut().remove(KnownHeaderName::Server);
-    conn
-}
-
-fn router() -> impl Handler {
-    Router::new()
-        .get("/config/*", config_handler)
-        .get("/health", health_handler)
-}
-
-#[async_std::main]
+#[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
-    let trillium_stopper = trillium_async_std::Stopper::new();
+    tracing_subscriber::fmt()
+        .with_max_level(filter_from_verbosity(&args.verbose))
+        .init();
+
+    LogTracer::init_with_filter(args.verbose.log_level_filter())?;
+
+    let api_stopper = trillium_tokio::Stopper::new();
+
     let signals = Signals::new(TERM_SIGNALS).context("error registering termination signals")?;
     let signals_handle = signals.handle();
-    let signal_task = task::spawn(handle_signals(signals, trillium_stopper.clone()));
+    let signals_task = tokio::spawn(handle_signals(signals, api_stopper.clone()));
 
-    let static_config = Arc::new(RwLock::new(Some(
-        load_config(&args.config_path)
-            .await
-            .context("error during initial load of static configuration")?,
-    )));
+    let database = Database::create(&args.mongodb).await?;
+    let database = Arc::new(database);
+    let (database_health_tx, database_health_task) = database.clone().handle_health();
+    let (get_config_tx, get_config_task) = database.handle_get_config();
 
-    let (notify_tx, notify_rx) = channel::bounded(1);
-    let watch_config_task = task::spawn(handle_notify(
-        notify_rx,
-        Arc::new(args.config_path.clone()),
-        static_config.clone(),
-    ));
-    let cloned_notify_tx = notify_tx.clone();
-    let mut last_sent = Instant::now();
-    let mut watcher = recommended_watcher(move |result: notify::Result<Event>| {
-        // Debounce sending to the channel
-        if last_sent.elapsed() < Duration::from_millis(100) {
-            return;
-        }
-        if let Err(err) = cloned_notify_tx.try_send(result) {
-            eprintln!("from=watcher_event_handler err={err}")
-        }
-        last_sent = Instant::now();
-    })
-    .context("error creating static configuration file watcher")?;
-    watcher
-        .watch(Path::new(&args.config_path), RecursiveMode::NonRecursive)
-        .context("error starting static configuration file watcher")?;
+    let api_handler = http_api::handler(database_health_tx, get_config_tx);
+    async move {
+        info!(addr = %args.common.listen_address, msg = "start listening");
+        trillium_tokio::config()
+            .with_host(&args.common.listen_address.ip().to_string())
+            .with_port(args.common.listen_address.port())
+            .without_signals()
+            .with_stopper(api_stopper)
+            .run_async(api_handler)
+            .await;
+        info!(status = "terminating");
+    }
+    .instrument(info_span!("http_server_task"))
+    .await;
 
-    eprintln!(
-        r#"listen="{}" msg="start listening""#,
-        args.common.listen_address
-    );
-    trillium_async_std::config()
-        .with_host(&args.common.listen_address.ip().to_string())
-        .with_port(args.common.listen_address.port())
-        .without_signals()
-        .with_stopper(trillium_stopper)
-        .run_async((
-            State::new(AppState { static_config }),
-            remove_server_header,
-            router(),
-        ))
-        .await;
-
-    notify_tx.close();
     signals_handle.close();
-    watch_config_task.await;
-    signal_task.await;
+
+    tokio::try_join!(signals_task, database_health_task, get_config_task)
+        .context("error joining signals handling task")?;
 
     Ok(())
 }

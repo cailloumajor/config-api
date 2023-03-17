@@ -1,7 +1,7 @@
 [package]
-name = "static-config-api"
+name = "config-api"
 version = "1.2.11"
-description = "Reads a TOML configuration file and serves it as JSON."
+description = "Configuration data HTTP API."
 authors = [ "Arnaud Rocher <arnaud.roche3@gmail.com>" ]
 edition = "2021"
 
@@ -9,26 +9,37 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.69"
-async-std = { version = "1.12.0", features = [ "attributes" ] }
-lazy_static = "1.4.0"
-notify = "5.0.0"
-serde = { version = "1.0.155", features = [ "derive" ] }
-serde_json = "1.0.94"
+arcstr = { version = "1.1.5", default-features = false }
+clap-verbosity-flag = "2.0.0"
+futures-util = "0.3.27"
+mongodb = "2.4.0"
 signal-hook = "0.3.15"
-signal-hook-async-std = "0.2.2"
-toml = "0.7.2"
+signal-hook-tokio = { version = "0.3.1", features = [ "futures-v0_3" ] }
+tracing = "0.1.37"
 trillium = "0.2.6"
 trillium-api = "0.1.0"
-trillium-async-std = "0.2.0"
-trillium-caching-headers = "0.2.1"
 trillium-client = { version = "0.3.0", features = [ "json" ] }
 trillium-router = "0.3.4"
+trillium-tokio = "0.2.1"
 
 [dependencies.clap]
 version = "4.1.8"
 default-features = false
 features = [ "std", "help", "usage", "error-context", "derive", "env" ]
 
+[dependencies.tokio]
+version = "1.26.0"
+features = [ "io-util", "fs", "macros", "rt", "sync" ]
+
+[dependencies.tracing-log]
+version = "0.1.3"
+default-features = false
+features = [ "std", "log-tracer" ]
+
+[dependencies.tracing-subscriber]
+version = "0.3.16"
+default-features = false
+features = [ "smallvec", "fmt", "ansi" ]
+
 [dev-dependencies]
-tempfile = "3.3.0"
-trillium-testing = { version = "0.4.0", features = [ "async-std" ] }
+trillium-testing = { version = "0.4.0", features = [ "tokio" ] }

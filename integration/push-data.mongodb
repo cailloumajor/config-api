@@ -1,0 +1,29 @@
+use("testdb");
+
+db.disableFreeMonitoring();
+
+db.firstCollection.insertMany([
+    {
+        _id: "one",
+        first: false,
+        second: 1,
+    },
+    {
+        _id: "two",
+        first: true,
+        second: 2,
+    },
+])
+
+db.secondCollection.insertMany([
+    {
+        _id: "one",
+        some: "value",
+        other: 37.5,
+    },
+    {
+        _id: "two",
+        some: "otherVal",
+        other: 42.9,
+    },
+])
