@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.1.0](https://github.com/cailloumajor/config-api/compare/v2.0.0...v2.1.0) (2023-03-22)
+
+
+### Features
+
+* implement document linking ([e6dd433](https://github.com/cailloumajor/config-api/commit/e6dd43367c92c76a819731ff2865f0f0902794d9))
+
+
+### Bug Fixes
+
+* **deps:** update rust crate anyhow to 1.0.70 ([ce28da5](https://github.com/cailloumajor/config-api/commit/ce28da5d3280fb5e244fc4412698a44a64603e59))
+* **deps:** update rust crate clap to 4.1.11 ([b368b8c](https://github.com/cailloumajor/config-api/commit/b368b8cb623f74f70393a04192803b9c65e4c3f3))
+* **deps:** update rust crate trillium-router to 0.3.5 ([393f55a](https://github.com/cailloumajor/config-api/commit/393f55a251edf3f08a499d57415fc1eaa1f400d3))
+
 ## [2.0.0](https://github.com/cailloumajor/config-api/compare/v1.2.11...v2.0.0) (2023-03-17)
 
 
