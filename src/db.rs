@@ -4,7 +4,8 @@ use std::time::Duration;
 use anyhow::Context;
 use arcstr::ArcStr;
 use clap::Args;
-use mongodb::bson::{doc, Document};
+use futures_util::TryFutureExt;
+use mongodb::bson::{doc, Bson, Document};
 use mongodb::options::ClientOptions;
 use mongodb::Client;
 use tokio::sync::{mpsc, oneshot};
@@ -90,12 +91,27 @@ impl Database {
                 while let Some((request, response_tx)) = rx.recv().await {
                     debug!(msg = "request received", ?request);
                     let collection = self.0.collection::<Document>(&request.collection);
+                    let mut document_id = request.id.clone();
                     let filter = doc! { "_id": request.id.as_str() };
-                    let response = match collection.find_one(filter, None).await {
+                    let found = collection
+                        .find_one(filter, None)
+                        .and_then(|first_found| async {
+                            if let Some(Bson::ObjectId(links_id)) =
+                                first_found.as_ref().and_then(|doc| doc.get("_links"))
+                            {
+                                document_id = ArcStr::from(links_id.to_string());
+                                let filter = doc! { "_id": links_id };
+                                collection.find_one(filter, None).await
+                            } else {
+                                Ok(first_found)
+                            }
+                        })
+                        .await;
+                    let response = match found {
                         Ok(Some(doc)) => GetConfigResponse::Document(doc),
                         Ok(None) => GetConfigResponse::NotFound(format!(
                             "Document with id `{}` not found in `{}` collection",
-                            request.id, request.collection
+                            document_id, request.collection
                         )),
                         Err(err) => {
                             error!(during = "document finding", %err);

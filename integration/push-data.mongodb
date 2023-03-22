@@ -2,6 +2,8 @@ use("testdb");
 
 db.disableFreeMonitoring();
 
+linksId = ObjectId();
+
 db.firstCollection.insertMany([
     {
         _id: "one",
@@ -10,6 +12,14 @@ db.firstCollection.insertMany([
     },
     {
         _id: "two",
+        _links: linksId,
+    },
+    {
+        _id: "missing_target",
+        _links: ObjectId(),
+    },
+    {
+        _id: linksId,
         first: true,
         second: 2,
     },

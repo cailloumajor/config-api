@@ -22,6 +22,14 @@ jsonpath "$.first" == true
 jsonpath "$.second" == 2
 
 
+GET http://config-api:8080/config/firstCollection/missing_target
+
+HTTP 404
+[Asserts]
+body contains "firstCollection"
+body matches /[0-9a-f]{24}/
+
+
 GET http://config-api:8080/config/secondCollection/one
 
 HTTP 200
