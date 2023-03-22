@@ -52,6 +52,12 @@ Returns configuration data.
 | 400  | Document not found      |
 | 500  | Internal server error   |
 
+##### Linked document
+
+If the MongoDB document found contains a `_links` key with an [`ObjectId`][BSON ObjectId] value, the returned document will be the one with this index.
+
+[BSON ObjectId]: https://www.mongodb.com/docs/v6.0/reference/bson-types/#objectid
+
 ## Usage
 
 ```ShellSession
