@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.1.1](https://github.com/cailloumajor/config-api/compare/v2.1.0...v2.1.1) (2023-03-30)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate clap to 4.1.12 ([ea32cee](https://github.com/cailloumajor/config-api/commit/ea32cee84bfe3e29a37d950076b9c612197a30a8))
+* **deps:** update rust crate clap to 4.1.13 ([15f61d3](https://github.com/cailloumajor/config-api/commit/15f61d31b128e6749127def533b242c5bbe8212b))
+* **deps:** update rust crate clap to 4.2.0 ([d15548c](https://github.com/cailloumajor/config-api/commit/d15548c818f0273ab4bda3df10d8c8d0584bd5ab))
+* **deps:** update rust crate clap to 4.2.1 ([0a559f1](https://github.com/cailloumajor/config-api/commit/0a559f13531347afbf7a9fd502d20750bae23f93))
+* **deps:** update rust crate tokio to 1.27.0 ([7e31a88](https://github.com/cailloumajor/config-api/commit/7e31a88931067c58a088c972da5d999ca64fc20d))
+* **deps:** update rust crate trillium to 0.2.7 ([2b97e8a](https://github.com/cailloumajor/config-api/commit/2b97e8ac8feddf5aa6d443b66ef68e4d870df157))
+* **deps:** update rust crate trillium to 0.2.8 ([e7e8f1f](https://github.com/cailloumajor/config-api/commit/e7e8f1f6ee3a34e8b0352533c80215f81cc5ec7b))
+* **deps:** update rust crate trillium-client to 0.3.1 ([82f6f02](https://github.com/cailloumajor/config-api/commit/82f6f02e85a586a44bc691073c4bbce9a889c208))
+* **deps:** update rust docker tag to v1.68.1 ([3f20912](https://github.com/cailloumajor/config-api/commit/3f2091229427701cdb402db71a1b22f5d6326e04))
+* **deps:** update rust docker tag to v1.68.2 ([2b3c8ff](https://github.com/cailloumajor/config-api/commit/2b3c8ff487b7ea500a17ca197388200bfb56f3fa))
+
 ## [2.1.0](https://github.com/cailloumajor/config-api/compare/v2.0.0...v2.1.0) (2023-03-22)
 
 
