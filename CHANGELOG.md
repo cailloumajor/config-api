@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.2](https://github.com/cailloumajor/config-api/compare/v2.1.1...v2.1.2) (2023-03-31)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate futures-util to 0.3.28 ([dabeddb](https://github.com/cailloumajor/config-api/commit/dabeddb7879c21dd0cafb3a20ee41ab0fb60b7f9))
+
 ## [2.1.1](https://github.com/cailloumajor/config-api/compare/v2.1.0...v2.1.1) (2023-03-30)
 
 
