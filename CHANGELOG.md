@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.1.3](https://github.com/cailloumajor/config-api/compare/v2.1.2...v2.1.3) (2023-04-03)
+
+
+### Bug Fixes
+
+* create a newtype to handle level filter ([e4a0fd8](https://github.com/cailloumajor/config-api/commit/e4a0fd8231dcb5e5ce6136977abd0a22b1402a6c))
+* **deps:** update rust crate clap-verbosity-flag to 2.0.1 ([130b366](https://github.com/cailloumajor/config-api/commit/130b36681ed6f6fa8e886f776951eecb90f07e21))
+
 ## [2.1.2](https://github.com/cailloumajor/config-api/compare/v2.1.1...v2.1.2) (2023-03-31)
 
 
