@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use anyhow::Context;
 use clap::Parser;
-use clap_verbosity_flag::{InfoLevel, LogLevel, Verbosity};
+use clap_verbosity_flag::{InfoLevel, Verbosity};
 use futures_util::StreamExt;
 use signal_hook::consts::TERM_SIGNALS;
 use signal_hook::low_level::signal_name;
@@ -16,6 +16,9 @@ use db::Database;
 
 mod db;
 mod http_api;
+mod level_filter;
+
+use level_filter::VerbosityLevelFilter;
 
 #[derive(Parser)]
 struct Args {
@@ -27,21 +30,6 @@ struct Args {
 
     #[command(flatten)]
     verbose: Verbosity<InfoLevel>,
-}
-
-fn filter_from_verbosity<T>(verbosity: &Verbosity<T>) -> tracing::level_filters::LevelFilter
-where
-    T: LogLevel,
-{
-    use tracing_log::log::LevelFilter;
-    match verbosity.log_level_filter() {
-        LevelFilter::Off => tracing::level_filters::LevelFilter::OFF,
-        LevelFilter::Error => tracing::level_filters::LevelFilter::ERROR,
-        LevelFilter::Warn => tracing::level_filters::LevelFilter::WARN,
-        LevelFilter::Info => tracing::level_filters::LevelFilter::INFO,
-        LevelFilter::Debug => tracing::level_filters::LevelFilter::DEBUG,
-        LevelFilter::Trace => tracing::level_filters::LevelFilter::TRACE,
-    }
 }
 
 #[instrument(skip_all)]
@@ -60,7 +48,7 @@ async fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
     tracing_subscriber::fmt()
-        .with_max_level(filter_from_verbosity(&args.verbose))
+        .with_max_level(VerbosityLevelFilter::from(&args.verbose))
         .init();
 
     LogTracer::init_with_filter(args.verbose.log_level_filter())?;
