@@ -1,7 +1,6 @@
 use anyhow::{anyhow, Context as _};
+use awc::Client;
 use clap::Parser;
-use trillium_client::Client;
-use trillium_tokio::ClientConfig;
 
 use config_api::CommonArgs;
 
@@ -11,7 +10,7 @@ struct Args {
     common: CommonArgs,
 }
 
-#[tokio::main]
+#[actix_web::main]
 async fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
@@ -20,15 +19,19 @@ async fn main() -> anyhow::Result<()> {
         args.common.listen_address.port()
     );
 
-    let client = Client::new(ClientConfig::default());
-    let mut resp = client.get(url.as_str()).await?;
+    let client = Client::default();
+    let mut resp = client
+        .get(url.as_str())
+        .send()
+        .await
+        .map_err(|err| anyhow!(err.to_string()))
+        .context("request error")?;
 
-    let status = resp.status().context("missing status code")?;
-
-    if !status.is_success() {
-        let body = resp.response_body().read_string().await?;
-        return Err(anyhow!(body));
+    if resp.status().is_success() {
+        Ok(())
+    } else {
+        let body = resp.body().await?;
+        let utf8_body = String::from_utf8_lossy(&body).into_owned();
+        Err(anyhow!(utf8_body))
     }
-
-    Ok(())
 }
