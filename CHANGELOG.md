@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.1](https://github.com/cailloumajor/config-api/compare/v2.2.0...v2.2.1) (2023-05-13)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate tokio to 1.28.1 ([d510af7](https://github.com/cailloumajor/config-api/commit/d510af77a94df08d1dc489646e312c0c59fcc104))
+
 ## [2.2.0](https://github.com/cailloumajor/config-api/compare/v2.1.3...v2.2.0) (2023-05-13)
 
 
