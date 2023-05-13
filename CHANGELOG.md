@@ -1,5 +1,28 @@
 # Changelog
 
+## [2.2.0](https://github.com/cailloumajor/config-api/compare/v2.1.3...v2.2.0) (2023-05-13)
+
+
+### Features
+
+* move from trillium to axum ([2a0f59c](https://github.com/cailloumajor/config-api/commit/2a0f59ce1ab0e0da7e37b3e7f445ec5deb4a1dc3))
+
+
+### Bug Fixes
+
+* **deps:** downgrade tracing crate to v0.1.37 ([ae802d8](https://github.com/cailloumajor/config-api/commit/ae802d8d1ebcb61b6d56cf2f503f5091e1feb3ec))
+* **deps:** update rust crate anyhow to 1.0.71 ([2e022ba](https://github.com/cailloumajor/config-api/commit/2e022ba07aa47bae74746f815dcfe334b93e5e04))
+* **deps:** update rust crate clap to 4.2.2 ([e29d653](https://github.com/cailloumajor/config-api/commit/e29d653308f39463a284b0993be1b87ab54bb6b0))
+* **deps:** update rust crate clap to 4.2.4 ([da57e9f](https://github.com/cailloumajor/config-api/commit/da57e9fc0c5faa94af139a12437fa9854982fc7d))
+* **deps:** update rust crate clap to 4.2.5 ([df4e592](https://github.com/cailloumajor/config-api/commit/df4e592bf0ef5a16a91218e4905c58288cfb6185))
+* **deps:** update rust crate clap to 4.2.7 ([8568ebc](https://github.com/cailloumajor/config-api/commit/8568ebc830562ec81e5b3240d9dc336ce454e496))
+* **deps:** update rust crate mongodb to 2.5.0 ([9e955fd](https://github.com/cailloumajor/config-api/commit/9e955fd97d216c856ff40e213548c079bb7f2c34))
+* **deps:** update rust crate tokio to 1.28.0 ([7611bf2](https://github.com/cailloumajor/config-api/commit/7611bf21f74f0fec4c98ff7472952aab81eb73b7))
+* **deps:** update rust crate tracing to 0.1.38 ([689d0b6](https://github.com/cailloumajor/config-api/commit/689d0b6f60bf5abe6fd8f5095902d23812af39a0))
+* **deps:** update rust crate tracing-subscriber to 0.3.17 ([1eedbbf](https://github.com/cailloumajor/config-api/commit/1eedbbf7810c2328e55d86ecceeb6c73c86c0c84))
+* **deps:** update rust docker tag to v1.69.0 ([77e1d42](https://github.com/cailloumajor/config-api/commit/77e1d4258fae698ecae7003bacce5e7c333fdedf))
+* **deps:** upgrade trillium crates ([53c6fd0](https://github.com/cailloumajor/config-api/commit/53c6fd0717c98553f60453ede49c833ea020468d))
+
 ## [2.1.3](https://github.com/cailloumajor/config-api/compare/v2.1.2...v2.1.3) (2023-04-03)
 
 
