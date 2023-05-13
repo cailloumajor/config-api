@@ -1,139 +1,149 @@
+use axum::extract::{Path, State};
+use axum::response::IntoResponse;
+use axum::{routing, Json, Router};
+use reqwest::StatusCode;
 use tokio::sync::{mpsc, oneshot};
 use tracing::{error, instrument};
-use trillium::{Conn, Handler, KnownHeaderName, State, Status};
-use trillium_api::ApiConnExt;
-use trillium_router::{Router, RouterConnExt};
 
 use crate::db::{GetConfigMessage, GetConfigRequest, GetConfigResponse};
 
-#[derive(Clone)]
+type HealthChannel = mpsc::Sender<oneshot::Sender<bool>>;
+type GetConfigChannel = mpsc::Sender<GetConfigMessage>;
+
+const INTERNAL_ERROR: (StatusCode, &str) =
+    (StatusCode::INTERNAL_SERVER_ERROR, "internal server error");
+
+impl IntoResponse for GetConfigResponse {
+    fn into_response(self) -> axum::response::Response {
+        match self {
+            GetConfigResponse::Document(doc) => Json(doc).into_response(),
+            GetConfigResponse::NotFound(message) => {
+                (StatusCode::NOT_FOUND, message).into_response()
+            }
+            GetConfigResponse::Error => INTERNAL_ERROR.into_response(),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
 struct AppState {
-    health_channel: mpsc::Sender<oneshot::Sender<bool>>,
-    get_config_channel: mpsc::Sender<GetConfigMessage>,
+    health_channel: HealthChannel,
+    get_config_channel: GetConfigChannel,
 }
 
-async fn remove_server_header(mut conn: Conn) -> Conn {
-    conn.headers_mut().remove(KnownHeaderName::Server);
-    conn
-}
-
-pub(crate) fn handler(
-    health_channel: mpsc::Sender<oneshot::Sender<bool>>,
-    get_config_channel: mpsc::Sender<GetConfigMessage>,
-) -> impl Handler {
-    (
-        State::new(AppState {
+pub(crate) fn app(health_channel: HealthChannel, get_config_channel: GetConfigChannel) -> Router {
+    Router::new()
+        .route("/health", routing::get(health_handler))
+        .route("/config/:collection/:id", routing::get(get_config_handler))
+        .with_state(AppState {
             health_channel,
             get_config_channel,
-        }),
-        remove_server_header,
-        Router::new()
-            .get("/health", health_handler)
-            .get("/config/:collection/:id", get_config_handler),
-    )
+        })
 }
 
 #[instrument(name = "health_api_handler", skip_all)]
-async fn health_handler(conn: Conn) -> Conn {
+async fn health_handler(State(state): State<AppState>) -> Result<StatusCode, impl IntoResponse> {
     let (tx, rx) = oneshot::channel();
-    let request_channel = &conn.state::<AppState>().unwrap().health_channel;
-    if let Err(err) = request_channel.try_send(tx) {
+    state.health_channel.try_send(tx).map_err(|err| {
         error!(kind = "request channel sending", %err);
-        return conn.with_status(Status::InternalServerError).halt();
-    }
-    match rx.await {
-        Ok(true) => conn.with_status(Status::NoContent).halt(),
-        Ok(false) => conn.with_status(Status::InternalServerError).halt(),
-        Err(err) => {
+        INTERNAL_ERROR
+    })?;
+    rx.await
+        .map_err(|err| {
             error!(kind = "outcome channel receiving", %err);
-            conn.with_status(Status::InternalServerError).halt()
-        }
-    }
+            INTERNAL_ERROR
+        })?
+        .then_some(StatusCode::NO_CONTENT)
+        .ok_or(INTERNAL_ERROR)
 }
 
 #[instrument(name = "config_api_handler", skip_all)]
-async fn get_config_handler(conn: Conn) -> Conn {
+async fn get_config_handler(
+    State(state): State<AppState>,
+    Path((collection, id)): Path<(String, String)>,
+) -> Result<GetConfigResponse, impl IntoResponse> {
+    let collection = collection.into();
+    let id = id.into();
+    let request = GetConfigRequest { collection, id };
     let (tx, rx) = oneshot::channel();
-    let request_channel = &conn.state::<AppState>().unwrap().get_config_channel;
-    let request = GetConfigRequest {
-        collection: conn.param("collection").unwrap().into(),
-        id: conn.param("id").unwrap().into(),
-    };
-    if let Err(err) = request_channel.try_send((request, tx)) {
-        error!(kind = "request channel sending", %err);
-        return conn.with_status(Status::InternalServerError).halt();
-    }
-    match rx.await {
-        Ok(GetConfigResponse::Document(doc)) => conn.with_json(&doc),
-        Ok(GetConfigResponse::NotFound(message)) => {
-            conn.with_status(Status::NotFound).with_body(message).halt()
-        }
-        Ok(GetConfigResponse::Error) => conn.with_status(Status::InternalServerError).halt(),
-        Err(err) => {
-            error!(during = "document finding", %err);
-            conn.with_status(Status::InternalServerError).halt()
-        }
-    }
+    state
+        .get_config_channel
+        .try_send((request, tx))
+        .map_err(|err| {
+            error!(kind = "request channel sending", %err);
+            INTERNAL_ERROR
+        })?;
+    rx.await.map_err(|err| {
+        error!(kind = "outcome channel receiving", %err);
+        INTERNAL_ERROR
+    })
 }
 
 #[cfg(test)]
 mod tests {
-    use std::thread;
-
-    use trillium_testing::prelude::*;
+    use axum::body::Body;
+    use axum::http::Request;
+    use tower::ServiceExt;
 
     use super::*;
 
     mod health_handler {
         use super::*;
 
-        fn testing_app(health_channel: mpsc::Sender<oneshot::Sender<bool>>) -> impl Handler {
+        fn testing_fixture(
+            health_channel: mpsc::Sender<oneshot::Sender<bool>>,
+        ) -> (Router, Request<Body>) {
             let (get_config_channel, _) = mpsc::channel(1);
-            handler(health_channel, get_config_channel)
+            let app = app(health_channel, get_config_channel);
+            let req = Request::builder()
+                .uri("/health")
+                .body(Body::empty())
+                .unwrap();
+            (app, req)
         }
 
-        #[test]
-        fn request_sending_error() {
+        #[tokio::test]
+        async fn request_sending_error() {
             let (tx, _) = mpsc::channel(1);
-            let app = testing_app(tx);
-            let conn = get("/health").on(&app);
-            assert_status!(&conn, Status::InternalServerError);
+            let (app, req) = testing_fixture(tx);
+            let res = app.oneshot(req).await.unwrap();
+            assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
         }
 
-        #[test]
-        fn outcome_channel_receiving_error() {
+        #[tokio::test]
+        async fn outcome_channel_receiving_error() {
             let (tx, mut rx) = mpsc::channel(1);
-            thread::spawn(move || {
+            tokio::spawn(async move {
                 // Consume and drop the response channel
-                let _ = rx.blocking_recv().expect("channel has been closed");
+                let _ = rx.recv().await.expect("channel has been closed");
             });
-            let app = testing_app(tx);
-            let conn = get("/health").on(&app);
-            assert_status!(&conn, Status::InternalServerError);
+            let (app, req) = testing_fixture(tx);
+            let res = app.oneshot(req).await.unwrap();
+            assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
         }
 
-        #[test]
-        fn unhealthy() {
+        #[tokio::test]
+        async fn unhealthy() {
             let (tx, mut rx) = mpsc::channel::<oneshot::Sender<bool>>(1);
-            thread::spawn(move || {
-                let response_tx = rx.blocking_recv().expect("channel has been closed");
+            tokio::spawn(async move {
+                let response_tx = rx.recv().await.expect("channel has been closed");
                 response_tx.send(false).expect("error sending response");
             });
-            let app = testing_app(tx);
-            let conn = get("/health").on(&app);
-            assert_status!(&conn, Status::InternalServerError);
+            let (app, req) = testing_fixture(tx);
+            let res = app.oneshot(req).await.unwrap();
+            assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
         }
 
-        #[test]
-        fn healthy() {
+        #[tokio::test]
+        async fn healthy() {
             let (tx, mut rx) = mpsc::channel::<oneshot::Sender<bool>>(1);
-            thread::spawn(move || {
-                let response_tx = rx.blocking_recv().expect("channel has been closed");
+            tokio::spawn(async move {
+                let response_tx = rx.recv().await.expect("channel has been closed");
                 response_tx.send(true).expect("error sending response");
             });
-            let app = testing_app(tx);
-            let conn = get("/health").on(&app);
-            assert_status!(&conn, Status::NoContent);
+            let (app, req) = testing_fixture(tx);
+            let res = app.oneshot(req).await.unwrap();
+            assert_eq!(res.status(), StatusCode::NO_CONTENT);
         }
     }
 
@@ -142,68 +152,74 @@ mod tests {
 
         use super::*;
 
-        fn testing_app(get_config_channel: mpsc::Sender<GetConfigMessage>) -> impl Handler {
+        fn testing_fixture(get_config_channel: GetConfigChannel) -> (Router, Request<Body>) {
             let (health_channel, _) = mpsc::channel(1);
-            handler(health_channel, get_config_channel)
+            let app = app(health_channel, get_config_channel);
+            let req = Request::builder()
+                .uri("/config/somecoll/someid")
+                .body(Body::empty())
+                .unwrap();
+            (app, req)
         }
 
-        #[test]
-        fn request_sending_error() {
+        #[tokio::test]
+        async fn request_sending_error() {
             let (tx, _) = mpsc::channel(1);
-            let app = testing_app(tx);
-            let conn = get("/config/somecoll/someid").on(&app);
-            assert_status!(&conn, Status::InternalServerError);
+            let (app, req) = testing_fixture(tx);
+            let res = app.oneshot(req).await.unwrap();
+            assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
         }
 
-        #[test]
-        fn outcome_channel_receiving_error() {
+        #[tokio::test]
+        async fn outcome_channel_receiving_error() {
             let (tx, mut rx) = mpsc::channel(1);
-            thread::spawn(move || {
+            tokio::spawn(async move {
                 // Consume and drop the response channel
-                let _ = rx.blocking_recv().expect("channel has been closed");
+                let _ = rx.recv().await.expect("channel has been closed");
             });
-            let app = testing_app(tx);
-            let conn = get("/config/somecoll/someid").on(&app);
-            assert_status!(&conn, Status::InternalServerError);
+            let (app, req) = testing_fixture(tx);
+            let res = app.oneshot(req).await.unwrap();
+            assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
         }
 
-        #[test]
-        fn error_response() {
+        #[tokio::test]
+        async fn error_response() {
             let (tx, mut rx) = mpsc::channel::<GetConfigMessage>(1);
-            thread::spawn(move || {
-                let (_, response_tx) = rx.blocking_recv().expect("channel has been closed");
+            tokio::spawn(async move {
+                let (_, response_tx) = rx.recv().await.expect("channel has been closed");
                 response_tx
                     .send(GetConfigResponse::Error)
                     .expect("error sending response");
             });
-            let app = testing_app(tx);
-            let conn = get("/config/somecoll/someid").on(&app);
-            assert_status!(&conn, Status::InternalServerError);
+            let (app, req) = testing_fixture(tx);
+            let res = app.oneshot(req).await.unwrap();
+            assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
         }
 
-        #[test]
-        fn not_found_response() {
+        #[tokio::test]
+        async fn not_found_response() {
             let (tx, mut rx) = mpsc::channel::<GetConfigMessage>(1);
-            thread::spawn(move || {
-                let (request, response_tx) = rx.blocking_recv().expect("channel has been closed");
+            tokio::spawn(async move {
+                let (request, response_tx) = rx.recv().await.expect("channel has been closed");
                 response_tx
                     .send(GetConfigResponse::NotFound(format!("{request:?}")))
                     .expect("error sending response");
             });
-            let app = testing_app(tx);
-            let mut conn = get("/config/somecoll/someid").on(&app);
-            assert_response!(
-                &mut conn,
-                Status::NotFound,
+            let (app, req) = testing_fixture(tx);
+            let res = app.oneshot(req).await.unwrap();
+            assert_eq!(res.status(), StatusCode::NOT_FOUND);
+            let body = hyper::body::to_bytes(res).await.unwrap();
+            assert_eq!(
+                body,
                 r#"GetConfigRequest { collection: "somecoll", id: "someid" }"#
             );
         }
 
-        #[test]
-        fn document_response() {
+        #[tokio::test]
+        async fn document_response() {
             let (tx, mut rx) = mpsc::channel::<GetConfigMessage>(1);
-            thread::spawn(move || {
-                let (request, response_tx) = rx.blocking_recv().expect("channel has been closed");
+            tokio::spawn(async move {
+                let (request, response_tx) = rx.recv().await.expect("channel has been closed");
                 let document = doc! {
                     "collection": request.collection.as_str(),
                     "id": request.id.as_str(),
@@ -212,14 +228,12 @@ mod tests {
                     .send(GetConfigResponse::Document(document))
                     .expect("error sending response");
             });
-            let app = testing_app(tx);
-            let mut conn = get("/config/somecoll/someid").on(&app);
-            assert_response!(
-                &mut conn,
-                Status::Ok,
-                r#"{"collection":"somecoll","id":"someid"}"#,
-                "Content-Type" => "application/json",
-            );
+            let (app, req) = testing_fixture(tx);
+            let res = app.oneshot(req).await.unwrap();
+            assert_eq!(res.status(), StatusCode::OK);
+            assert_eq!(res.headers()["Content-Type"], "application/json");
+            let body = hyper::body::to_bytes(res).await.unwrap();
+            assert_eq!(body, r#"{"collection":"somecoll","id":"someid"}"#);
         }
     }
 }
