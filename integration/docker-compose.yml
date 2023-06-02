@@ -16,7 +16,7 @@ services:
       - MONGODB_DATABASE=testdb
 
   api-test:
-    image: ghcr.io/orange-opensource/hurl:3.0.0
+    image: ghcr.io/orange-opensource/hurl:3.0.1
     command:
       - --test
       - /usr/src/test.hurl
