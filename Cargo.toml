@@ -29,7 +29,7 @@ default-features = false
 features = [ "std", "help", "usage", "error-context", "derive", "env" ]
 
 [dependencies.tokio]
-version = "1.28.2"
+version = "1.29.1"
 features = [ "io-util", "fs", "macros", "rt-multi-thread", "sync" ]
 
 [dependencies.tracing-log]
@@ -43,5 +43,5 @@ default-features = false
 features = [ "ansi", "fmt", "parking_lot", "smallvec", "std" ]
 
 [dev-dependencies]
-hyper = { version = "0.14.27", default-features = false }
+hyper = { version = "0.14.26", default-features = false }
 tower = { version = "0.4.13", default-features = false }
