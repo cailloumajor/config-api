@@ -1,5 +1,24 @@
 # Changelog
 
+## [2.2.4](https://github.com/cailloumajor/config-api/compare/v2.2.3...v2.2.4) (2023-07-17)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate anyhow to 1.0.72 ([c087a3d](https://github.com/cailloumajor/config-api/commit/c087a3daebf6db8c6122aa87a11db438ff1be45b))
+* **deps:** update rust crate axum to 0.6.19 ([fd668f6](https://github.com/cailloumajor/config-api/commit/fd668f66624ddf75dd5475c2614701b4922e51a7))
+* **deps:** update rust crate clap to 4.3.1 ([74a29c8](https://github.com/cailloumajor/config-api/commit/74a29c8dfdd18f74252ce4db32e709b114d22e2a))
+* **deps:** update rust crate clap to 4.3.11 ([7d00f7b](https://github.com/cailloumajor/config-api/commit/7d00f7b06e50e9eb862240ad1aaf3518c2834ec8))
+* **deps:** update rust crate clap to 4.3.12 ([3cec648](https://github.com/cailloumajor/config-api/commit/3cec648b8170e50f06053ac1927754702041e5e3))
+* **deps:** update rust crate clap to 4.3.2 ([9d1efa8](https://github.com/cailloumajor/config-api/commit/9d1efa8c4875d69208da1c6b2841672bfd37348a))
+* **deps:** update rust crate clap to 4.3.3 ([e23b7b1](https://github.com/cailloumajor/config-api/commit/e23b7b1ed8176ed943bc1392da71708cc6eb7a03))
+* **deps:** update rust crate mongodb to 2.6.0 ([516730b](https://github.com/cailloumajor/config-api/commit/516730bbdb47d02f1948304fbbfc0c7b59de4841))
+* **deps:** update rust crate signal-hook to 0.3.16 ([6afba30](https://github.com/cailloumajor/config-api/commit/6afba30fd03ec9f99602f77a4b17bbbf5601acf4))
+* **deps:** update rust crate tokio to 1.28.2 ([59634c5](https://github.com/cailloumajor/config-api/commit/59634c56ef847046750ee7523a0b7849d3c210ea))
+* **deps:** update rust crate tokio to 1.29.1 ([b76ab01](https://github.com/cailloumajor/config-api/commit/b76ab01a38fa5206f6e5a3107728f73e8e9b9e17))
+* **deps:** update rust docker tag to v1.70.0 ([804cecb](https://github.com/cailloumajor/config-api/commit/804cecb3480b0e562a135e7e7a820dececdda2c5))
+* **deps:** update rust docker tag to v1.71.0 ([db40ef4](https://github.com/cailloumajor/config-api/commit/db40ef414a10976829c297fe25ec492c026554f4))
+
 ## [2.2.3](https://github.com/cailloumajor/config-api/compare/v2.2.2...v2.2.3) (2023-05-21)
 
 
