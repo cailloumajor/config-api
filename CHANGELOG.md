@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.5](https://github.com/cailloumajor/config-api/compare/v2.2.4...v2.2.5) (2023-07-17)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate anyhow to 1.0.72 ([1bd0ed2](https://github.com/cailloumajor/config-api/commit/1bd0ed248137b8688408bc772d0cbe6ef44c2224))
+
 ## [2.2.4](https://github.com/cailloumajor/config-api/compare/v2.2.3...v2.2.4) (2023-07-17)
 
 
