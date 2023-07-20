@@ -14,7 +14,7 @@ clap-verbosity-flag = "2.0.1"
 futures-util = "0.3.28"
 mongodb = "2.6.0"
 reqwest = { version = "0.11.18", default-features = false }
-signal-hook = "0.3.16"
+signal-hook = "0.3.17"
 signal-hook-tokio = { version = "0.3.1", features = [ "futures-v0_3" ] }
 tracing = "0.1.37"
 
