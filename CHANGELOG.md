@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.2.6](https://github.com/cailloumajor/config-api/compare/v2.2.5...v2.2.6) (2023-07-23)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate clap to 4.3.15 ([9e8169d](https://github.com/cailloumajor/config-api/commit/9e8169df45653431d30d7242f94530396d56baf9))
+* **deps:** update rust crate clap to 4.3.17 ([3c2c3c2](https://github.com/cailloumajor/config-api/commit/3c2c3c22816651853f1d970638e5ca2f597f4620))
+* **deps:** update rust crate clap to 4.3.19 ([d81d124](https://github.com/cailloumajor/config-api/commit/d81d124a326bfead62e9cc7d60c11cf9b7022f97))
+* **deps:** update rust crate signal-hook to 0.3.17 ([2ffd840](https://github.com/cailloumajor/config-api/commit/2ffd840c5035f81de67e20b3415177e4e099157d))
+
 ## [2.2.5](https://github.com/cailloumajor/config-api/compare/v2.2.4...v2.2.5) (2023-07-17)
 
 
