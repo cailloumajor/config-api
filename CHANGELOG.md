@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.2.7](https://github.com/cailloumajor/config-api/compare/v2.2.6...v2.2.7) (2023-08-14)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate axum to 0.6.20 ([2821360](https://github.com/cailloumajor/config-api/commit/2821360c4acf093039395895494c6feba1ca56dd))
+* **deps:** update rust crate clap to 4.3.21 ([52cbd76](https://github.com/cailloumajor/config-api/commit/52cbd767228cd855caada3f3f2fc620f86d15b71))
+* **deps:** update rust crate tokio to 1.31.0 ([0efdc93](https://github.com/cailloumajor/config-api/commit/0efdc93500556be85eb83bdfe7a774bb6be1c828))
+* **deps:** update rust docker tag to v1.71.1 ([1ef6299](https://github.com/cailloumajor/config-api/commit/1ef629943ec3d94feb6bc56a5ad4da3c0ac29ede))
+
 ## [2.2.6](https://github.com/cailloumajor/config-api/compare/v2.2.5...v2.2.6) (2023-07-23)
 
 
