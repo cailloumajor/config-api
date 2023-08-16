@@ -1,6 +1,6 @@
 [package]
 name = "config-api"
-version = "2.2.7"
+version = "2.2.8"
 description = "Configuration data HTTP API."
 authors = [ "Arnaud Rocher <arnaud.roche3@gmail.com>" ]
 edition = "2021"
