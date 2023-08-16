@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.2.8](https://github.com/cailloumajor/config-api/compare/v2.2.7...v2.2.8) (2023-08-16)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate anyhow to 1.0.74 ([7958e24](https://github.com/cailloumajor/config-api/commit/7958e249ec5121637bb020b489cd6ef5a346419e))
+* **deps:** update rust crate mongodb to 2.6.1 ([661eaec](https://github.com/cailloumajor/config-api/commit/661eaec522ee03fbe05565825d8bd51f8fe7ec55))
+
 ## [2.2.7](https://github.com/cailloumajor/config-api/compare/v2.2.6...v2.2.7) (2023-08-14)
 
 
