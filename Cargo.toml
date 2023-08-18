@@ -29,7 +29,7 @@ default-features = false
 features = [ "std", "help", "usage", "error-context", "derive", "env" ]
 
 [dependencies.tokio]
-version = "1.31.0"
+version = "1.32.0"
 features = [ "io-util", "fs", "macros", "rt-multi-thread", "sync" ]
 
 [dependencies.tracing-log]
