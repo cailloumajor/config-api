@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.2.9](https://github.com/cailloumajor/config-api/compare/v2.2.8...v2.2.9) (2023-08-21)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate anyhow to 1.0.75 ([03bdd09](https://github.com/cailloumajor/config-api/commit/03bdd09dc30f92eb84675712e5c6d26099df5907))
+* **deps:** update rust crate clap to 4.3.22 ([266482a](https://github.com/cailloumajor/config-api/commit/266482ad542b08f78398762e229abe0c8f920ce1))
+* **deps:** update rust crate clap to 4.3.23 ([0ea5673](https://github.com/cailloumajor/config-api/commit/0ea56738734c38fcebe5e3ac5e7345161f0ad574))
+* **deps:** update rust crate tokio to 1.32.0 ([1bbf2f3](https://github.com/cailloumajor/config-api/commit/1bbf2f3355c62773198bcf201d3c917359cf3db9))
+
 ## [2.2.8](https://github.com/cailloumajor/config-api/compare/v2.2.7...v2.2.8) (2023-08-16)
 
 
