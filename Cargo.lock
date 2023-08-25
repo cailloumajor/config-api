@@ -292,7 +292,7 @@ dependencies = [
 
 [[package]]
 name = "config-api"
-version = "2.2.10"
+version = "2.2.11"
 dependencies = [
  "anyhow",
  "arcstr",
