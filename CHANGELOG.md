@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.2.10](https://github.com/cailloumajor/config-api/compare/v2.2.9...v2.2.10) (2023-08-25)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate clap to 4.4.0 ([b25f613](https://github.com/cailloumajor/config-api/commit/b25f613d33f2de2a27ec28cc5fc8b8b74ecb4103))
+* **deps:** update rust crate reqwest to 0.11.19 ([bbc2f67](https://github.com/cailloumajor/config-api/commit/bbc2f672fd59d7444f8c43a70ae936d05a024460))
+* **deps:** update rust crate reqwest to 0.11.20 ([298ac1a](https://github.com/cailloumajor/config-api/commit/298ac1a89da821486bfe18062e23f856dd73e4e1))
+* **deps:** update rust docker tag to v1.72.0 ([7891980](https://github.com/cailloumajor/config-api/commit/7891980eb864233636582f3f33770f5ec8914b08))
+
 ## [2.2.9](https://github.com/cailloumajor/config-api/compare/v2.2.8...v2.2.9) (2023-08-21)
 
 
