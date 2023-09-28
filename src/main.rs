@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use anyhow::Context;
 use axum::Server;
 use clap::Parser;
@@ -14,6 +12,7 @@ use tracing_log::LogTracer;
 use config_api::CommonArgs;
 use db::Database;
 
+mod channel;
 mod db;
 mod http_api;
 mod level_filter;
@@ -52,14 +51,16 @@ async fn main() -> anyhow::Result<()> {
     LogTracer::init_with_filter(args.verbose.log_level_filter())?;
 
     let database = Database::create(&args.mongodb).await?;
-    let database = Arc::new(database);
-    let (database_health_tx, database_health_task) = database.clone().handle_health();
-    let (get_config_tx, get_config_task) = database.handle_get_config();
+    let (health_channel, health_task) = database.clone().handle_health();
+    let (get_config_channel, get_config_task) = database.handle_get_config();
 
     let signals = Signals::new(TERM_SIGNALS).context("error registering termination signals")?;
     let signals_handle = signals.handle();
 
-    let app = http_api::app(database_health_tx, get_config_tx);
+    let app = http_api::app(http_api::AppState {
+        health_channel,
+        get_config_channel,
+    });
     async move {
         info!(addr = %args.common.listen_address, msg = "start listening");
         if let Err(err) = Server::bind(&args.common.listen_address)
@@ -76,7 +77,7 @@ async fn main() -> anyhow::Result<()> {
 
     signals_handle.close();
 
-    tokio::try_join!(database_health_task, get_config_task).context("error joining task(s)")?;
+    tokio::try_join!(health_task, get_config_task).context("error joining task(s)")?;
 
     Ok(())
 }

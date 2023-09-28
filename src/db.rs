@@ -1,16 +1,15 @@
-use std::sync::Arc;
 use std::time::Duration;
 
 use anyhow::Context;
-use arcstr::ArcStr;
 use clap::Args;
 use futures_util::TryFutureExt;
 use mongodb::bson::{doc, Bson, Document};
 use mongodb::options::ClientOptions;
 use mongodb::Client;
-use tokio::sync::{mpsc, oneshot};
 use tokio::task::JoinHandle;
 use tracing::{debug, error, info, info_span, instrument, Instrument};
+
+use crate::channel::{roundtrip_channel, RoundtripSender};
 
 const APP_NAME: &str = concat!(env!("CARGO_PKG_NAME"), " (", env!("CARGO_PKG_VERSION"), ")");
 
@@ -25,10 +24,12 @@ pub(crate) struct Config {
     mongodb_database: String,
 }
 
+pub(crate) type HealthChannel = RoundtripSender<(), bool>;
+
 #[derive(Debug)]
 pub(crate) struct GetConfigRequest {
-    pub(crate) collection: ArcStr,
-    pub(crate) id: ArcStr,
+    pub(crate) collection: String,
+    pub(crate) id: String,
 }
 
 #[derive(Debug)]
@@ -38,8 +39,9 @@ pub(crate) enum GetConfigResponse {
     Error,
 }
 
-pub(crate) type GetConfigMessage = (GetConfigRequest, oneshot::Sender<GetConfigResponse>);
+pub(crate) type GetConfigChannel = RoundtripSender<GetConfigRequest, GetConfigResponse>;
 
+#[derive(Clone)]
 pub(crate) struct Database(mongodb::Database);
 
 impl Database {
@@ -56,18 +58,21 @@ impl Database {
         Ok(Self(database))
     }
 
-    pub(crate) fn handle_health(
-        self: Arc<Self>,
-    ) -> (mpsc::Sender<oneshot::Sender<bool>>, JoinHandle<()>) {
-        let (tx, mut rx) = mpsc::channel::<oneshot::Sender<bool>>(1);
+    pub(crate) fn handle_health(&self) -> (HealthChannel, JoinHandle<()>) {
+        let (tx, mut rx) = roundtrip_channel(1);
         let command = doc! { "ping": 1 };
+        let cloned_self = self.clone();
 
         let task = tokio::spawn(
             async move {
                 info!(status = "started");
-                while let Some(response_tx) = rx.recv().await {
+                while let Some((_, response_tx)) = rx.recv().await {
                     debug!(msg = "request received");
-                    let outcome = self.0.run_command(command.clone(), None).await.is_ok();
+                    let outcome = cloned_self
+                        .0
+                        .run_command(command.clone(), None)
+                        .await
+                        .is_ok();
                     if response_tx.send(outcome).is_err() {
                         error!(kind = "outcome channel sending");
                     }
@@ -80,26 +85,25 @@ impl Database {
         (tx, task)
     }
 
-    pub(crate) fn handle_get_config(
-        self: Arc<Self>,
-    ) -> (mpsc::Sender<GetConfigMessage>, JoinHandle<()>) {
-        let (tx, mut rx) = mpsc::channel::<GetConfigMessage>(5);
+    pub(crate) fn handle_get_config(&self) -> (GetConfigChannel, JoinHandle<()>) {
+        let (tx, mut rx) = roundtrip_channel::<GetConfigRequest, GetConfigResponse>(5);
+        let cloned_self = self.clone();
 
         let task = tokio::spawn(
             async move {
                 info!(status = "started");
                 while let Some((request, response_tx)) = rx.recv().await {
                     debug!(msg = "request received", ?request);
-                    let collection = self.0.collection::<Document>(&request.collection);
-                    let mut document_id = request.id.clone();
-                    let filter = doc! { "_id": request.id.as_str() };
+                    let collection = cloned_self.0.collection::<Document>(&request.collection);
+                    let mut document_id = request.id;
+                    let filter = doc! { "_id": &document_id };
                     let found = collection
                         .find_one(filter, None)
                         .and_then(|first_found| async {
                             if let Some(Bson::ObjectId(links_id)) =
                                 first_found.as_ref().and_then(|doc| doc.get("_links"))
                             {
-                                document_id = ArcStr::from(links_id.to_string());
+                                document_id = links_id.to_string();
                                 let filter = doc! { "_id": links_id };
                                 collection.find_one(filter, None).await
                             } else {
