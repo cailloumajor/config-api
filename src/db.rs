@@ -1,4 +1,3 @@
-use std::sync::Arc;
 use std::time::Duration;
 
 use anyhow::Context;
@@ -40,6 +39,7 @@ pub(crate) enum GetConfigResponse {
 
 pub(crate) type GetConfigMessage = (GetConfigRequest, oneshot::Sender<GetConfigResponse>);
 
+#[derive(Clone)]
 pub(crate) struct Database(mongodb::Database);
 
 impl Database {
@@ -56,18 +56,21 @@ impl Database {
         Ok(Self(database))
     }
 
-    pub(crate) fn handle_health(
-        self: Arc<Self>,
-    ) -> (mpsc::Sender<oneshot::Sender<bool>>, JoinHandle<()>) {
+    pub(crate) fn handle_health(&self) -> (mpsc::Sender<oneshot::Sender<bool>>, JoinHandle<()>) {
         let (tx, mut rx) = mpsc::channel::<oneshot::Sender<bool>>(1);
         let command = doc! { "ping": 1 };
+        let cloned_self = self.clone();
 
         let task = tokio::spawn(
             async move {
                 info!(status = "started");
                 while let Some(response_tx) = rx.recv().await {
                     debug!(msg = "request received");
-                    let outcome = self.0.run_command(command.clone(), None).await.is_ok();
+                    let outcome = cloned_self
+                        .0
+                        .run_command(command.clone(), None)
+                        .await
+                        .is_ok();
                     if response_tx.send(outcome).is_err() {
                         error!(kind = "outcome channel sending");
                     }
@@ -80,17 +83,16 @@ impl Database {
         (tx, task)
     }
 
-    pub(crate) fn handle_get_config(
-        self: Arc<Self>,
-    ) -> (mpsc::Sender<GetConfigMessage>, JoinHandle<()>) {
+    pub(crate) fn handle_get_config(&self) -> (mpsc::Sender<GetConfigMessage>, JoinHandle<()>) {
         let (tx, mut rx) = mpsc::channel::<GetConfigMessage>(5);
+        let cloned_self = self.clone();
 
         let task = tokio::spawn(
             async move {
                 info!(status = "started");
                 while let Some((request, response_tx)) = rx.recv().await {
                     debug!(msg = "request received", ?request);
-                    let collection = self.0.collection::<Document>(&request.collection);
+                    let collection = cloned_self.0.collection::<Document>(&request.collection);
                     let mut document_id = request.id.clone();
                     let filter = doc! { "_id": request.id.as_str() };
                     let found = collection

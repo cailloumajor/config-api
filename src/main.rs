@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use anyhow::Context;
 use axum::Server;
 use clap::Parser;
@@ -52,7 +50,6 @@ async fn main() -> anyhow::Result<()> {
     LogTracer::init_with_filter(args.verbose.log_level_filter())?;
 
     let database = Database::create(&args.mongodb).await?;
-    let database = Arc::new(database);
     let (database_health_tx, database_health_task) = database.clone().handle_health();
     let (get_config_tx, get_config_task) = database.handle_get_config();
 
