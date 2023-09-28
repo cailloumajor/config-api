@@ -1,7 +1,6 @@
 use std::time::Duration;
 
 use anyhow::Context;
-use arcstr::ArcStr;
 use clap::Args;
 use futures_util::TryFutureExt;
 use mongodb::bson::{doc, Bson, Document};
@@ -26,8 +25,8 @@ pub(crate) struct Config {
 
 #[derive(Debug)]
 pub(crate) struct GetConfigRequest {
-    pub(crate) collection: ArcStr,
-    pub(crate) id: ArcStr,
+    pub(crate) collection: String,
+    pub(crate) id: String,
 }
 
 #[derive(Debug)]
@@ -93,15 +92,15 @@ impl Database {
                 while let Some((request, response_tx)) = rx.recv().await {
                     debug!(msg = "request received", ?request);
                     let collection = cloned_self.0.collection::<Document>(&request.collection);
-                    let mut document_id = request.id.clone();
-                    let filter = doc! { "_id": request.id.as_str() };
+                    let mut document_id = request.id;
+                    let filter = doc! { "_id": &document_id };
                     let found = collection
                         .find_one(filter, None)
                         .and_then(|first_found| async {
                             if let Some(Bson::ObjectId(links_id)) =
                                 first_found.as_ref().and_then(|doc| doc.get("_links"))
                             {
-                                document_id = ArcStr::from(links_id.to_string());
+                                document_id = links_id.to_string();
                                 let filter = doc! { "_id": links_id };
                                 collection.find_one(filter, None).await
                             } else {

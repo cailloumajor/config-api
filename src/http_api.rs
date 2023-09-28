@@ -62,8 +62,6 @@ async fn get_config_handler(
     State(state): State<AppState>,
     Path((collection, id)): Path<(String, String)>,
 ) -> Result<GetConfigResponse, impl IntoResponse> {
-    let collection = collection.into();
-    let id = id.into();
     let request = GetConfigRequest { collection, id };
     let (tx, rx) = oneshot::channel();
     state
