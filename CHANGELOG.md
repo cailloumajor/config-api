@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.3.0](https://github.com/cailloumajor/config-api/compare/v2.2.13...v2.3.0) (2023-09-28)
+
+
+### Features
+
+* implement configuration patching ([df3bcb2](https://github.com/cailloumajor/config-api/commit/df3bcb20d66ecb37c35b63e47899fa509218faf8))
+
+
+### Bug Fixes
+
+* **deps:** update rust crate clap to 4.4.5 ([c179d01](https://github.com/cailloumajor/config-api/commit/c179d01c9eeabb2999c3516f685065a9ec27adba))
+* **deps:** update rust crate mongodb to 2.7.0 ([f62e745](https://github.com/cailloumajor/config-api/commit/f62e74505cc7fa2a1751a0d8445c9e0fb6eb7ceb))
+* implement DRY roundtrip channel ([d35c427](https://github.com/cailloumajor/config-api/commit/d35c427319495761255cb53a995a1753887a8314))
+* remove nested `Arc`s ([b6803c6](https://github.com/cailloumajor/config-api/commit/b6803c6c97f81ea141cf781ac4d9d5b873f17a89))
+* remove useless `ArcStr`s ([e99286a](https://github.com/cailloumajor/config-api/commit/e99286a028dd4a3e70455ce8c4156f30f2b1c12c))
+
 ## [2.2.13](https://github.com/cailloumajor/config-api/compare/v2.2.12...v2.2.13) (2023-09-20)
 
 
