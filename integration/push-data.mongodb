@@ -23,9 +23,13 @@ db.firstCollection.insertMany([
         first: true,
         second: 2,
     },
-])
+]);
 
 db.secondCollection.insertMany([
+    {
+        _id: "_authorization",
+        patchAllowedFields: ["some"],
+    },
     {
         _id: "one",
         some: "value",
@@ -36,4 +40,4 @@ db.secondCollection.insertMany([
         some: "otherVal",
         other: 42.9,
     },
-])
+]);

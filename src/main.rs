@@ -53,6 +53,7 @@ async fn main() -> anyhow::Result<()> {
     let database = Database::create(&args.mongodb).await?;
     let (health_channel, health_task) = database.clone().handle_health();
     let (get_config_channel, get_config_task) = database.handle_get_config();
+    let (patch_config_channel, patch_config_task) = database.handle_patch_config();
 
     let signals = Signals::new(TERM_SIGNALS).context("error registering termination signals")?;
     let signals_handle = signals.handle();
@@ -60,6 +61,7 @@ async fn main() -> anyhow::Result<()> {
     let app = http_api::app(http_api::AppState {
         health_channel,
         get_config_channel,
+        patch_config_channel,
     });
     async move {
         info!(addr = %args.common.listen_address, msg = "start listening");
@@ -77,7 +79,8 @@ async fn main() -> anyhow::Result<()> {
 
     signals_handle.close();
 
-    tokio::try_join!(health_task, get_config_task).context("error joining task(s)")?;
+    tokio::try_join!(health_task, get_config_task, patch_config_task)
+        .context("error joining task(s)")?;
 
     Ok(())
 }

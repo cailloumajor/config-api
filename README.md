@@ -31,7 +31,7 @@ None
 | 204  | Service is healthy   |
 | 500  | Service in unhealthy |
 
-### Configuration data
+### Get configuration data
 
 #### `GET` `/config/{collection}/{id}`
 
@@ -39,10 +39,10 @@ Returns configuration data.
 
 ##### Parameters
 
-| Name                | Description                |
-| ------------------- | -------------------------- |
-| collection _(path)_ | MongoDB collection         |
-| id _(path)_         | ID of the MongoDB document |
+| Name       | Source | Description                |
+| ---------- | ------ | -------------------------- |
+| collection | _path_ | MongoDB collection         |
+| id         | _path_ | ID of the MongoDB document |
 
 ##### Response
 
@@ -57,6 +57,32 @@ Returns configuration data.
 If the MongoDB document found contains a `_links` key with an [`ObjectId`][BSON ObjectId] value, the returned document will be the one with this index.
 
 [BSON ObjectId]: https://www.mongodb.com/docs/v6.0/reference/bson-types/#objectid
+
+### Patch configuration data
+
+#### `PATCH` `/config/{collection}/{id}`
+
+Applies changes on a configuration document.
+
+##### Parameters
+
+| Name       | Source | Description                |
+| ---------- | ------ | -------------------------- |
+| collection | _path_ | MongoDB collection         |
+| id         | _path_ | ID of the MongoDB document |
+
+##### Request body
+
+The expected body request is a JSON object with key(s) and value(s) corresponding with those of the database document.
+
+##### Authorization
+
+The changes will be applied if all the following conditions are met:
+
+* a document with `_authorization` primary key exists;
+* this document contains a `patchAllowedFields` field;
+* this field is an array;
+* this array contains all of the keys of the request JSON body (as strings).
 
 ## Usage
 
