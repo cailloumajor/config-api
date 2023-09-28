@@ -1,13 +1,15 @@
+use std::collections::HashMap;
 use std::time::Duration;
 
 use anyhow::Context;
+use axum::http::StatusCode;
 use clap::Args;
 use futures_util::TryFutureExt;
-use mongodb::bson::{doc, Bson, Document};
-use mongodb::options::ClientOptions;
+use mongodb::bson::{self, doc, Bson, Document};
+use mongodb::options::{ClientOptions, CountOptions};
 use mongodb::Client;
 use tokio::task::JoinHandle;
-use tracing::{debug, error, info, info_span, instrument, Instrument};
+use tracing::{debug, error, info, info_span, instrument, warn, Instrument};
 
 use crate::channel::{roundtrip_channel, RoundtripSender};
 
@@ -40,6 +42,14 @@ pub(crate) enum GetConfigResponse {
 }
 
 pub(crate) type GetConfigChannel = RoundtripSender<GetConfigRequest, GetConfigResponse>;
+
+pub(crate) struct PatchConfigRequest {
+    pub(crate) collection: String,
+    pub(crate) id: String,
+    pub(crate) changes: HashMap<String, Bson>,
+}
+
+pub(crate) type PatchConfigChannel = RoundtripSender<PatchConfigRequest, StatusCode>;
 
 #[derive(Clone)]
 pub(crate) struct Database(mongodb::Database);
@@ -129,6 +139,72 @@ impl Database {
                 info!(status = "terminating");
             }
             .instrument(info_span!("mongodb_get_config_handler")),
+        );
+
+        (tx, task)
+    }
+
+    pub(crate) fn handle_patch_config(&self) -> (PatchConfigChannel, JoinHandle<()>) {
+        let (tx, mut rx) = roundtrip_channel::<PatchConfigRequest, StatusCode>(10);
+        let cloned_self = self.clone();
+
+        let task = tokio::spawn(
+            async move {
+                info!(status = "started");
+
+                while let Some((request, reply_tx)) = rx.recv().await {
+                    let send_reply = |reply: StatusCode| {
+                        if reply_tx.send(reply).is_err() {
+                            error!(kind = "reply channel sending");
+                        }
+                    };
+                    let collection = cloned_self.0.collection::<Document>(&request.collection);
+                    let requested_changes_keys = request.changes.keys().collect::<Vec<_>>();
+                    let auth_document_filter = doc! {
+                        "_id": "_authorization",
+                        "patchAllowedFields": {
+                            "$all": &requested_changes_keys,
+                        },
+                    };
+                    let auth_document_options = CountOptions::builder().limit(1).build();
+                    match collection
+                        .count_documents(auth_document_filter, auth_document_options)
+                        .await
+                    {
+                        Ok(count) if count == 0 => {
+                            warn!(
+                                msg = "missing authorization",
+                                request.collection,
+                                ?requested_changes_keys
+                            );
+                            send_reply(StatusCode::UNAUTHORIZED);
+                            continue;
+                        }
+                        Err(err) => {
+                            error!(kind = "document count request", request.collection, %err);
+                            continue;
+                        }
+                        Ok(_) => {}
+                    }
+                    let update_filter = doc! { "_id": request.id };
+                    let update_document = match bson::to_document(&request.changes) {
+                        Ok(doc) => doc,
+                        Err(err) => {
+                            error!(kind = "encoding changes document", request.collection, %err);
+                            continue;
+                        }
+                    };
+                    let update = doc! { "$set": update_document };
+                    if let Err(err) = collection.update_one(update_filter, update, None).await {
+                        error!(kind = "document updating", request.collection, %err);
+                    } else {
+                        send_reply(StatusCode::OK);
+                    }
+                }
+
+                info!(status = "terminating");
+            }
+            .instrument(info_span!("mongodb_patch_config_handler")),
         );
 
         (tx, task)

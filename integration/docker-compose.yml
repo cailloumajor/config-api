@@ -19,6 +19,8 @@ services:
     image: ghcr.io/orange-opensource/hurl:4.1.0
     command:
       - --test
+      - --variable
+      - host=http://config-api:8080
       - /usr/src/test.hurl
     volumes:
       - ./test.hurl:/usr/src/test.hurl:ro
