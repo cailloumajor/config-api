@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.1](https://github.com/cailloumajor/config-api/compare/v2.3.0...v2.3.1) (2023-09-29)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate clap to 4.4.6 ([62960d2](https://github.com/cailloumajor/config-api/commit/62960d28376b612f201716ce3a9baf2db3301838))
+
 ## [2.3.0](https://github.com/cailloumajor/config-api/compare/v2.2.13...v2.3.0) (2023-09-28)
 
 
