@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.4.0](https://github.com/cailloumajor/config-api/compare/v2.3.1...v2.4.0) (2023-10-03)
+
+
+### Features
+
+* implement getting an entire collection ([a7411fb](https://github.com/cailloumajor/config-api/commit/a7411fbdb04cac8200e683aab094a786c3956875))
+
+
+### Bug Fixes
+
+* **deps:** update rust crate reqwest to 0.11.21 ([3c0654e](https://github.com/cailloumajor/config-api/commit/3c0654e14f0f00b2a8f805df7996efb2cd1e26e7))
+* **deps:** update rust crate reqwest to 0.11.22 ([9f10936](https://github.com/cailloumajor/config-api/commit/9f1093688a04c7a107a95317df26db345711c938))
+
 ## [2.3.1](https://github.com/cailloumajor/config-api/compare/v2.3.0...v2.3.1) (2023-09-29)
 
 
