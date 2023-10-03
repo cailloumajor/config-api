@@ -1,3 +1,24 @@
+GET {{host}}/config/unknownCollection
+
+HTTP 404
+[Asserts]
+body contains "unknownCollection"
+
+
+GET {{host}}/config/secondCollection
+
+HTTP 200
+[Asserts]
+header "Server" not exists
+jsonpath "$[0]._id" == "_authorization"
+jsonpath "$[1]._id" == "one"
+jsonpath "$[1].some" == "value"
+jsonpath "$[1].other" == 37.5
+jsonpath "$[2]._id" == "two"
+jsonpath "$[2].some" == "otherVal"
+jsonpath "$[2].other" == 42.9
+
+
 GET {{host}}/config/unknownCollection/unknownId
 
 HTTP 404
