@@ -4,9 +4,9 @@ use std::time::Duration;
 use anyhow::Context;
 use axum::http::StatusCode;
 use clap::Args;
-use futures_util::TryFutureExt;
+use futures_util::{TryFutureExt, TryStreamExt};
 use mongodb::bson::{self, doc, Bson, Document};
-use mongodb::options::{ClientOptions, CountOptions};
+use mongodb::options::{ClientOptions, CountOptions, FindOptions};
 use mongodb::Client;
 use tokio::task::JoinHandle;
 use tracing::{debug, error, info, info_span, instrument, warn, Instrument};
@@ -29,19 +29,26 @@ pub(crate) struct Config {
 pub(crate) type HealthChannel = RoundtripSender<(), bool>;
 
 #[derive(Debug)]
-pub(crate) struct GetConfigRequest {
+pub(crate) enum GetCollectionResponse {
+    Documents(Vec<Document>),
+    NotFound(String),
+}
+
+pub(crate) type GetCollectionChannel = RoundtripSender<String, GetCollectionResponse>;
+
+#[derive(Debug)]
+pub(crate) struct GetDocumentRequest {
     pub(crate) collection: String,
     pub(crate) id: String,
 }
 
 #[derive(Debug)]
-pub(crate) enum GetConfigResponse {
+pub(crate) enum GetDocumentResponse {
     Document(Document),
     NotFound(String),
-    Error,
 }
 
-pub(crate) type GetConfigChannel = RoundtripSender<GetConfigRequest, GetConfigResponse>;
+pub(crate) type GetDocumentChannel = RoundtripSender<GetDocumentRequest, GetDocumentResponse>;
 
 pub(crate) struct PatchConfigRequest {
     pub(crate) collection: String,
@@ -95,8 +102,63 @@ impl Database {
         (tx, task)
     }
 
-    pub(crate) fn handle_get_config(&self) -> (GetConfigChannel, JoinHandle<()>) {
-        let (tx, mut rx) = roundtrip_channel::<GetConfigRequest, GetConfigResponse>(5);
+    pub(crate) fn handle_get_collection(&self) -> (GetCollectionChannel, JoinHandle<()>) {
+        let (tx, mut rx) = roundtrip_channel::<String, GetCollectionResponse>(1);
+        let cloned_self = self.clone();
+
+        let task = tokio::spawn(
+            async move {
+                info!(status = "started");
+
+                while let Some((request, reply_tx)) = rx.recv().await {
+                    debug!(msg = "request received", collection = request);
+
+                    let reply = |response: GetCollectionResponse| {
+                        if reply_tx.send(response).is_err() {
+                            error!(kind = "reply channel sending");
+                        }
+                    };
+                    if cloned_self
+                        .0
+                        .list_collection_names(doc! { "name": &request })
+                        .await
+                        .unwrap_or_default()
+                        .is_empty()
+                    {
+                        reply(GetCollectionResponse::NotFound(format!(
+                            "Collection `{request}` does not exist"
+                        )));
+                        continue;
+                    }
+                    let collection = cloned_self.0.collection::<Document>(&request);
+                    let find_options = FindOptions::builder().sort(doc! { "_id": 1 }).build();
+                    let cursor = match collection.find(None, find_options).await {
+                        Ok(cursor) => cursor,
+                        Err(err) => {
+                            error!(kind = "finding documents", %err);
+                            continue;
+                        }
+                    };
+                    let documents = match cursor.try_collect::<Vec<_>>().await {
+                        Ok(docs) => docs,
+                        Err(err) => {
+                            error!(kind = "collecting documents", %err);
+                            continue;
+                        }
+                    };
+                    reply(GetCollectionResponse::Documents(documents));
+                }
+
+                info!(status = "terminating");
+            }
+            .instrument(info_span!("mongodb_collection_handler")),
+        );
+
+        (tx, task)
+    }
+
+    pub(crate) fn handle_get_document(&self) -> (GetDocumentChannel, JoinHandle<()>) {
+        let (tx, mut rx) = roundtrip_channel::<GetDocumentRequest, GetDocumentResponse>(5);
         let cloned_self = self.clone();
 
         let task = tokio::spawn(
@@ -122,14 +184,14 @@ impl Database {
                         })
                         .await;
                     let response = match found {
-                        Ok(Some(doc)) => GetConfigResponse::Document(doc),
-                        Ok(None) => GetConfigResponse::NotFound(format!(
+                        Ok(Some(doc)) => GetDocumentResponse::Document(doc),
+                        Ok(None) => GetDocumentResponse::NotFound(format!(
                             "Document with id `{}` not found in `{}` collection",
                             document_id, request.collection
                         )),
                         Err(err) => {
                             error!(during = "document finding", %err);
-                            GetConfigResponse::Error
+                            continue;
                         }
                     };
                     if response_tx.send(response).is_err() {
@@ -138,7 +200,7 @@ impl Database {
                 }
                 info!(status = "terminating");
             }
-            .instrument(info_span!("mongodb_get_config_handler")),
+            .instrument(info_span!("mongodb_document_handler")),
         );
 
         (tx, task)

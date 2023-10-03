@@ -31,25 +31,46 @@ None
 | 204  | Service is healthy   |
 | 500  | Service in unhealthy |
 
-### Get configuration data
+### Get configuration data (all documents in a collection)
 
-#### `GET` `/config/{collection}/{id}`
+#### `GET` `/config/{collection}`
 
-Returns configuration data.
+Returns the configuration data for all the documents in the collection.
 
 ##### Parameters
 
-| Name       | Source | Description                |
-| ---------- | ------ | -------------------------- |
-| collection | _path_ | MongoDB collection         |
-| id         | _path_ | ID of the MongoDB document |
+| Name         | Source | Description        |
+| ------------ | ------ | ------------------ |
+| `collection` | _path_ | MongoDB collection |
+
+##### Response
+
+| Code | Description                                   |
+| ---- | --------------------------------------------- |
+| 200  | JSON array of all documents in the collection |
+| 500  | Internal server error                         |
+
+###### Note: the array returned in case of success will be sorted by primary key
+
+### Get configuration data (one document)
+
+#### `GET` `/config/{collection}/{id}`
+
+Returns configuration data for a specific document.
+
+##### Parameters
+
+| Name         | Source | Description                |
+| ------------ | ------ | -------------------------- |
+| `collection` | _path_ | MongoDB collection         |
+| `id`         | _path_ | ID of the MongoDB document |
 
 ##### Response
 
 | Code | Description             |
 | ---- | ----------------------- |
 | 200  | Document in JSON format |
-| 400  | Document not found      |
+| 404  | Document not found      |
 | 500  | Internal server error   |
 
 ##### Linked document
@@ -66,10 +87,10 @@ Applies changes on a configuration document.
 
 ##### Parameters
 
-| Name       | Source | Description                |
-| ---------- | ------ | -------------------------- |
-| collection | _path_ | MongoDB collection         |
-| id         | _path_ | ID of the MongoDB document |
+| Name         | Source | Description                |
+| ------------ | ------ | -------------------------- |
+| `collection` | _path_ | MongoDB collection         |
+| `id`         | _path_ | ID of the MongoDB document |
 
 ##### Request body
 

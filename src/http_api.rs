@@ -8,22 +8,32 @@ use reqwest::StatusCode;
 use tracing::{error, instrument};
 
 use crate::db::{
-    GetConfigChannel, GetConfigRequest, GetConfigResponse, HealthChannel, PatchConfigChannel,
-    PatchConfigRequest,
+    GetCollectionChannel, GetCollectionResponse, GetDocumentChannel, GetDocumentRequest,
+    GetDocumentResponse, HealthChannel, PatchConfigChannel, PatchConfigRequest,
 };
 
 type HandlerError = (StatusCode, &'static str);
 
 const INTERNAL_ERROR: HandlerError = (StatusCode::INTERNAL_SERVER_ERROR, "internal server error");
 
-impl IntoResponse for GetConfigResponse {
+impl IntoResponse for GetCollectionResponse {
     fn into_response(self) -> axum::response::Response {
         match self {
-            GetConfigResponse::Document(doc) => Json(doc).into_response(),
-            GetConfigResponse::NotFound(message) => {
+            GetCollectionResponse::Documents(docs) => Json(docs).into_response(),
+            GetCollectionResponse::NotFound(message) => {
                 (StatusCode::NOT_FOUND, message).into_response()
             }
-            GetConfigResponse::Error => INTERNAL_ERROR.into_response(),
+        }
+    }
+}
+
+impl IntoResponse for GetDocumentResponse {
+    fn into_response(self) -> axum::response::Response {
+        match self {
+            GetDocumentResponse::Document(doc) => Json(doc).into_response(),
+            GetDocumentResponse::NotFound(message) => {
+                (StatusCode::NOT_FOUND, message).into_response()
+            }
         }
     }
 }
@@ -31,16 +41,18 @@ impl IntoResponse for GetConfigResponse {
 #[derive(Clone)]
 pub(crate) struct AppState {
     pub(crate) health_channel: HealthChannel,
-    pub(crate) get_config_channel: GetConfigChannel,
+    pub(crate) get_collection_channel: GetCollectionChannel,
+    pub(crate) get_document_channel: GetDocumentChannel,
     pub(crate) patch_config_channel: PatchConfigChannel,
 }
 
 pub(crate) fn app(app_state: AppState) -> Router {
     Router::new()
         .route("/health", routing::get(health_handler))
+        .route("/config/:collection", routing::get(get_collection_handler))
         .route(
             "/config/:collection/:id",
-            routing::get(get_config_handler).patch(patch_config_handler),
+            routing::get(get_document_handler).patch(patch_config_handler),
         )
         .with_state(app_state)
 }
@@ -59,18 +71,33 @@ async fn health_handler(State(state): State<AppState>) -> Result<StatusCode, Han
         .ok_or(INTERNAL_ERROR)
 }
 
-#[instrument(name = "get_config_api_handler", skip_all)]
-async fn get_config_handler(
+#[instrument(name = "get_collection_api_handler", skip_all)]
+async fn get_collection_handler(
+    State(state): State<AppState>,
+    Path(collection): Path<String>,
+) -> Result<GetCollectionResponse, HandlerError> {
+    state
+        .get_collection_channel
+        .roundtrip(collection)
+        .await
+        .map_err(|err| {
+            error!(kind = "collection retrieve channel roundtrip", %err);
+            INTERNAL_ERROR
+        })
+}
+
+#[instrument(name = "get_document_api_handler", skip_all)]
+async fn get_document_handler(
     State(state): State<AppState>,
     Path((collection, id)): Path<(String, String)>,
-) -> Result<GetConfigResponse, HandlerError> {
-    let request = GetConfigRequest { collection, id };
+) -> Result<GetDocumentResponse, HandlerError> {
+    let request = GetDocumentRequest { collection, id };
     state
-        .get_config_channel
+        .get_document_channel
         .roundtrip(request)
         .await
         .map_err(|err| {
-            error!(kind = "configuration retrieve channel roundtrip", %err);
+            error!(kind = "document retrieve channel roundtrip", %err);
             INTERNAL_ERROR
         })
 }
@@ -100,6 +127,7 @@ async fn patch_config_handler(
 mod tests {
     use axum::body::Body;
     use axum::http::Request;
+    use mongodb::bson::doc;
     use tower::ServiceExt;
 
     use crate::channel::roundtrip_channel;
@@ -110,11 +138,13 @@ mod tests {
         use super::*;
 
         fn testing_fixture(health_channel: HealthChannel) -> (Router, Request<Body>) {
-            let (get_config_channel, _) = roundtrip_channel(1);
+            let (get_collection_channel, _) = roundtrip_channel(1);
+            let (get_document_channel, _) = roundtrip_channel(1);
             let (patch_config_channel, _) = roundtrip_channel(1);
             let app = app(AppState {
                 health_channel,
-                get_config_channel,
+                get_collection_channel,
+                get_document_channel,
                 patch_config_channel,
             });
             let req = Request::builder()
@@ -157,17 +187,84 @@ mod tests {
         }
     }
 
-    mod get_config_handler {
-        use mongodb::bson::doc;
-
+    mod get_collection_handler {
         use super::*;
 
-        fn testing_fixture(get_config_channel: GetConfigChannel) -> (Router, Request<Body>) {
+        fn testing_fixture(
+            get_collection_channel: GetCollectionChannel,
+        ) -> (Router, Request<Body>) {
             let (health_channel, _) = roundtrip_channel(1);
+            let (get_document_channel, _) = roundtrip_channel(1);
             let (patch_config_channel, _) = roundtrip_channel(1);
             let app = app(AppState {
                 health_channel,
-                get_config_channel,
+                get_collection_channel,
+                get_document_channel,
+                patch_config_channel,
+            });
+            let req = Request::builder()
+                .uri("/config/somecollection")
+                .body(Body::empty())
+                .unwrap();
+            (app, req)
+        }
+
+        #[tokio::test]
+        async fn roundtrip_error() {
+            let (tx, _) = roundtrip_channel(1);
+            let (app, req) = testing_fixture(tx);
+            let res = app.oneshot(req).await.unwrap();
+            assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
+        }
+
+        #[tokio::test]
+        async fn not_found() {
+            let (tx, mut rx) = roundtrip_channel(1);
+            tokio::spawn(async move {
+                let (request, response_tx) = rx.recv().await.expect("channel has been closed");
+                response_tx
+                    .send(GetCollectionResponse::NotFound(request))
+                    .expect("error sending response");
+            });
+            let (app, req) = testing_fixture(tx);
+            let res = app.oneshot(req).await.unwrap();
+            assert_eq!(res.status(), StatusCode::NOT_FOUND);
+            let body = hyper::body::to_bytes(res).await.unwrap();
+            assert_eq!(body, "somecollection");
+        }
+
+        #[tokio::test]
+        async fn success() {
+            let (tx, mut rx) = roundtrip_channel(1);
+            tokio::spawn(async move {
+                let (request, response_tx) = rx.recv().await.expect("channel has been closed");
+                response_tx
+                    .send(GetCollectionResponse::Documents(vec![
+                        doc! { "a": 1, "b": "c" },
+                        doc! { "a": 2, "b": request },
+                    ]))
+                    .expect("error sending response");
+            });
+            let (app, req) = testing_fixture(tx);
+            let res = app.oneshot(req).await.unwrap();
+            assert_eq!(res.status(), StatusCode::OK);
+            assert_eq!(res.headers()["Content-Type"], "application/json");
+            let body = hyper::body::to_bytes(res).await.unwrap();
+            assert_eq!(body, r#"[{"a":1,"b":"c"},{"a":2,"b":"somecollection"}]"#);
+        }
+    }
+
+    mod get_document_handler {
+        use super::*;
+
+        fn testing_fixture(get_document_channel: GetDocumentChannel) -> (Router, Request<Body>) {
+            let (health_channel, _) = roundtrip_channel(1);
+            let (get_collection_channel, _) = roundtrip_channel(1);
+            let (patch_config_channel, _) = roundtrip_channel(1);
+            let app = app(AppState {
+                health_channel,
+                get_collection_channel,
+                get_document_channel,
                 patch_config_channel,
             });
             let req = Request::builder()
@@ -186,26 +283,12 @@ mod tests {
         }
 
         #[tokio::test]
-        async fn error_response() {
-            let (tx, mut rx) = roundtrip_channel(1);
-            tokio::spawn(async move {
-                let (_, response_tx) = rx.recv().await.expect("channel has been closed");
-                response_tx
-                    .send(GetConfigResponse::Error)
-                    .expect("error sending response");
-            });
-            let (app, req) = testing_fixture(tx);
-            let res = app.oneshot(req).await.unwrap();
-            assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
-        }
-
-        #[tokio::test]
         async fn not_found_response() {
             let (tx, mut rx) = roundtrip_channel(1);
             tokio::spawn(async move {
                 let (request, response_tx) = rx.recv().await.expect("channel has been closed");
                 response_tx
-                    .send(GetConfigResponse::NotFound(format!("{request:?}")))
+                    .send(GetDocumentResponse::NotFound(format!("{request:?}")))
                     .expect("error sending response");
             });
             let (app, req) = testing_fixture(tx);
@@ -214,13 +297,13 @@ mod tests {
             let body = hyper::body::to_bytes(res).await.unwrap();
             assert_eq!(
                 body,
-                r#"GetConfigRequest { collection: "somecoll", id: "someid" }"#
+                r#"GetDocumentRequest { collection: "somecoll", id: "someid" }"#
             );
         }
 
         #[tokio::test]
         async fn document_response() {
-            let (tx, mut rx) = roundtrip_channel::<GetConfigRequest, GetConfigResponse>(1);
+            let (tx, mut rx) = roundtrip_channel::<GetDocumentRequest, GetDocumentResponse>(1);
             tokio::spawn(async move {
                 let (request, response_tx) = rx.recv().await.expect("channel has been closed");
                 let document = doc! {
@@ -228,7 +311,7 @@ mod tests {
                     "id": request.id.as_str(),
                 };
                 response_tx
-                    .send(GetConfigResponse::Document(document))
+                    .send(GetDocumentResponse::Document(document))
                     .expect("error sending response");
             });
             let (app, req) = testing_fixture(tx);
@@ -245,10 +328,12 @@ mod tests {
 
         fn testing_fixture(patch_config_channel: PatchConfigChannel) -> (Router, Request<Body>) {
             let (health_channel, _) = roundtrip_channel(1);
-            let (get_config_channel, _) = roundtrip_channel(1);
+            let (get_collection_channel, _) = roundtrip_channel(1);
+            let (get_document_channel, _) = roundtrip_channel(1);
             let app = app(AppState {
                 health_channel,
-                get_config_channel,
+                get_collection_channel,
+                get_document_channel,
                 patch_config_channel,
             });
             let req = Request::builder()
