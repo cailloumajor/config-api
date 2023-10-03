@@ -1,7 +1,5 @@
 use("testdb");
 
-db.disableFreeMonitoring();
-
 linksId = ObjectId();
 
 db.firstCollection.insertMany([
