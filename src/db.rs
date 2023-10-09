@@ -233,7 +233,7 @@ impl Database {
                         .count_documents(auth_document_filter, auth_document_options)
                         .await
                     {
-                        Ok(count) if count == 0 => {
+                        Ok(0) => {
                             warn!(
                                 msg = "missing authorization",
                                 request.collection,
