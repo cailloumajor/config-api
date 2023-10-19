@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.4.2](https://github.com/cailloumajor/config-api/compare/v2.4.1...v2.4.2) (2023-10-19)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate tracing to 0.1.39 ([a4e10ed](https://github.com/cailloumajor/config-api/commit/a4e10ed6a567594825c9386bb477b51844f4d07a))
+* **deps:** update rust crate tracing to 0.1.40 ([9e1518c](https://github.com/cailloumajor/config-api/commit/9e1518c0a4a8d8ff2bad4399f0b963c5ca37ceb0))
+* **deps:** update tonistiigi/xx docker tag to v1.3.0 ([daf5ecc](https://github.com/cailloumajor/config-api/commit/daf5ecca176348965131a87dcb130c9ed34f5abd))
+
 ## [2.4.1](https://github.com/cailloumajor/config-api/compare/v2.4.0...v2.4.1) (2023-10-09)
 
 
