@@ -125,7 +125,7 @@ async fn patch_config_handler(
 
 #[cfg(test)]
 mod tests {
-    use axum::body::Body;
+    use axum::body::{to_bytes, Body};
     use axum::http::Request;
     use mongodb::bson::doc;
     use tower::ServiceExt;
@@ -229,7 +229,7 @@ mod tests {
             let (app, req) = testing_fixture(tx);
             let res = app.oneshot(req).await.unwrap();
             assert_eq!(res.status(), StatusCode::NOT_FOUND);
-            let body = hyper::body::to_bytes(res).await.unwrap();
+            let body = to_bytes(res.into_body(), 1024).await.unwrap();
             assert_eq!(body, "somecollection");
         }
 
@@ -249,7 +249,7 @@ mod tests {
             let res = app.oneshot(req).await.unwrap();
             assert_eq!(res.status(), StatusCode::OK);
             assert_eq!(res.headers()["Content-Type"], "application/json");
-            let body = hyper::body::to_bytes(res).await.unwrap();
+            let body = to_bytes(res.into_body(), 1024).await.unwrap();
             assert_eq!(body, r#"[{"a":1,"b":"c"},{"a":2,"b":"somecollection"}]"#);
         }
     }
@@ -294,7 +294,7 @@ mod tests {
             let (app, req) = testing_fixture(tx);
             let res = app.oneshot(req).await.unwrap();
             assert_eq!(res.status(), StatusCode::NOT_FOUND);
-            let body = hyper::body::to_bytes(res).await.unwrap();
+            let body = to_bytes(res.into_body(), 1024).await.unwrap();
             assert_eq!(
                 body,
                 r#"GetDocumentRequest { collection: "somecoll", id: "someid" }"#
@@ -318,7 +318,7 @@ mod tests {
             let res = app.oneshot(req).await.unwrap();
             assert_eq!(res.status(), StatusCode::OK);
             assert_eq!(res.headers()["Content-Type"], "application/json");
-            let body = hyper::body::to_bytes(res).await.unwrap();
+            let body = to_bytes(res.into_body(), 1024).await.unwrap();
             assert_eq!(body, r#"{"collection":"somecoll","id":"someid"}"#);
         }
     }
