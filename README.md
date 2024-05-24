@@ -119,9 +119,9 @@ Options:
       --mongodb-database <MONGODB_DATABASE>
           MongoDB database [env: MONGODB_DATABASE=]
   -v, --verbose...
-          More output per occurrence
+          Increase logging verbosity
   -q, --quiet...
-          Less output per occurrence
+          Decrease logging verbosity
   -h, --help
           Print help
 ```
