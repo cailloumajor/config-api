@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.4](https://github.com/cailloumajor/config-api/compare/v2.4.3...v2.4.4) (2024-06-17)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate reqwest to v0.12.5 ([7487ec4](https://github.com/cailloumajor/config-api/commit/7487ec48bb2389a8506355379b5ebf10017f303b))
+
 ## [2.4.3](https://github.com/cailloumajor/config-api/compare/v2.4.2...v2.4.3) (2024-05-24)
 
 
