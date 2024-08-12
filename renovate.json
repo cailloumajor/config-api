@@ -3,6 +3,11 @@
   "extends": [
     "config:base"
   ],
+  "automergeType": "branch",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "automerge": true
+  },
   "packageRules": [
     {
       "matchDepTypes": ["dev-dependencies"],
