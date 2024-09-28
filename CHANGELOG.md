@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.4.4](https://github.com/cailloumajor/config-api/compare/v2.4.3...v2.4.4) (2024-09-28)
+
+
+### Bug Fixes
+
+* **deps:** cargo update time ([c87f469](https://github.com/cailloumajor/config-api/commit/c87f4696629494fbdeac6288e15262ecd07a5d5d))
+* **deps:** update rust crate reqwest to v0.12.5 ([7487ec4](https://github.com/cailloumajor/config-api/commit/7487ec48bb2389a8506355379b5ebf10017f303b))
+* **deps:** update Rust docker tag to bookworm ([5a7f80b](https://github.com/cailloumajor/config-api/commit/5a7f80b2e7e0b0c66a6b486814b3bcaf848028a5))
+* **deps:** update rust docker tag to v1.80.1 ([48976ee](https://github.com/cailloumajor/config-api/commit/48976ee089c5bbc81255e79ba0b96512e9437f4a))
+* **deps:** update rust docker tag to v1.81.0 ([8232e35](https://github.com/cailloumajor/config-api/commit/8232e35cfea9d3fdf1ec2462838e7456b6e29d88))
+* **deps:** update tonistiigi/xx docker tag to v1.5.0 ([8c1ab1d](https://github.com/cailloumajor/config-api/commit/8c1ab1d967040e043e02586b00d2149ce4811594))
+
 ## [2.4.3](https://github.com/cailloumajor/config-api/compare/v2.4.2...v2.4.3) (2024-05-24)
 
 
