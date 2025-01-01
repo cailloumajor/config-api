@@ -18,7 +18,7 @@ signal-hook-tokio = { version = "0.3", features = [ "futures-v0_3" ] }
 tracing = "0.1"
 
 [dependencies.axum]
-version = "0.7"
+version = "0.8"
 default-features = false
 features = [ "http1", "json", "tokio" ]
 
