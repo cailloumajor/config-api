@@ -11,12 +11,12 @@
   "packageRules": [
     {
       "matchDepTypes": ["dev-dependencies"],
-      "automerge": true,
+      "automerge": true
     },
     {
       "matchDepTypes": ["dependencies"],
       "matchUpdateTypes": ["patch"],
-      "automerge": true,
+      "automerge": true
     },
     {
       "matchPackageNames": ["rust", "tonistiigi/xx"],
