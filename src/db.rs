@@ -5,13 +5,13 @@ use anyhow::Context;
 use axum::http::StatusCode;
 use clap::Args;
 use futures_util::{TryFutureExt, TryStreamExt};
-use mongodb::bson::{self, doc, Bson, Document};
-use mongodb::options::{ClientOptions, CountOptions, FindOptions};
 use mongodb::Client;
+use mongodb::bson::{self, Bson, Document, doc};
+use mongodb::options::{ClientOptions, CountOptions, FindOptions};
 use tokio::task::JoinHandle;
-use tracing::{debug, error, info, info_span, instrument, warn, Instrument};
+use tracing::{Instrument, debug, error, info, info_span, instrument, warn};
 
-use crate::channel::{roundtrip_channel, RoundtripSender};
+use crate::channel::{RoundtripSender, roundtrip_channel};
 
 const APP_NAME: &str = concat!(env!("CARGO_PKG_NAME"), " (", env!("CARGO_PKG_VERSION"), ")");
 
@@ -85,11 +85,7 @@ impl Database {
                 info!(status = "started");
                 while let Some((_, response_tx)) = rx.recv().await {
                     debug!(msg = "request received");
-                    let outcome = cloned_self
-                        .0
-                        .run_command(command.clone(), None)
-                        .await
-                        .is_ok();
+                    let outcome = cloned_self.0.run_command(command.clone()).await.is_ok();
                     if response_tx.send(outcome).is_err() {
                         error!(kind = "outcome channel sending");
                     }
@@ -120,7 +116,8 @@ impl Database {
                     };
                     if cloned_self
                         .0
-                        .list_collection_names(doc! { "name": &request })
+                        .list_collection_names()
+                        .filter(doc! { "name": &request })
                         .await
                         .unwrap_or_default()
                         .is_empty()
@@ -132,7 +129,7 @@ impl Database {
                     }
                     let collection = cloned_self.0.collection::<Document>(&request);
                     let find_options = FindOptions::builder().sort(doc! { "_id": 1 }).build();
-                    let cursor = match collection.find(None, find_options).await {
+                    let cursor = match collection.find(doc! {}).with_options(find_options).await {
                         Ok(cursor) => cursor,
                         Err(err) => {
                             error!(kind = "finding documents", %err);
@@ -170,14 +167,15 @@ impl Database {
                     let mut document_id = request.id;
                     let filter = doc! { "_id": &document_id };
                     let found = collection
-                        .find_one(filter, None)
+                        .find_one(filter)
+                        .into_future()
                         .and_then(|first_found| async {
                             if let Some(Bson::ObjectId(links_id)) =
                                 first_found.as_ref().and_then(|doc| doc.get("_links"))
                             {
                                 document_id = links_id.to_string();
                                 let filter = doc! { "_id": links_id };
-                                collection.find_one(filter, None).await
+                                collection.find_one(filter).await
                             } else {
                                 Ok(first_found)
                             }
@@ -230,7 +228,8 @@ impl Database {
                     };
                     let auth_document_options = CountOptions::builder().limit(1).build();
                     match collection
-                        .count_documents(auth_document_filter, auth_document_options)
+                        .count_documents(auth_document_filter)
+                        .with_options(auth_document_options)
                         .await
                     {
                         Ok(0) => {
@@ -257,7 +256,7 @@ impl Database {
                         }
                     };
                     let update = doc! { "$set": update_document };
-                    if let Err(err) = collection.update_one(update_filter, update, None).await {
+                    if let Err(err) = collection.update_one(update_filter, update).await {
                         error!(kind = "document updating", request.collection, %err);
                     } else {
                         send_reply(StatusCode::OK);

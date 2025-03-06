@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use axum::extract::{Path, State};
 use axum::response::IntoResponse;
-use axum::{routing, Json, Router};
+use axum::{Json, Router, routing};
 use mongodb::bson::Bson;
 use reqwest::StatusCode;
 use tracing::{error, instrument};
@@ -49,9 +49,9 @@ pub(crate) struct AppState {
 pub(crate) fn app(app_state: AppState) -> Router {
     Router::new()
         .route("/health", routing::get(health_handler))
-        .route("/config/:collection", routing::get(get_collection_handler))
+        .route("/config/{collection}", routing::get(get_collection_handler))
         .route(
-            "/config/:collection/:id",
+            "/config/{collection}/{id}",
             routing::get(get_document_handler).patch(patch_config_handler),
         )
         .with_state(app_state)
@@ -125,7 +125,7 @@ async fn patch_config_handler(
 
 #[cfg(test)]
 mod tests {
-    use axum::body::{to_bytes, Body};
+    use axum::body::{Body, to_bytes};
     use axum::http::Request;
     use mongodb::bson::doc;
     use tower::ServiceExt;
