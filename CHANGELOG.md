@@ -1,5 +1,27 @@
 # Changelog
 
+## [2.4.5](https://github.com/cailloumajor/config-api/compare/v2.4.4...v2.4.5) (2025-03-06)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate anyhow to v1.0.94 ([#310](https://github.com/cailloumajor/config-api/issues/310)) ([94c0db6](https://github.com/cailloumajor/config-api/commit/94c0db69eb75352a7e6c8dd5e55d6fe1c8512d79))
+* **deps:** update rust crate axum to v0.7.9 ([#312](https://github.com/cailloumajor/config-api/issues/312)) ([1447f65](https://github.com/cailloumajor/config-api/commit/1447f65945deba8a96469df851724e222bbb502a))
+* **deps:** update rust crate clap to v4.5.22 ([#285](https://github.com/cailloumajor/config-api/issues/285)) ([8017f3a](https://github.com/cailloumajor/config-api/commit/8017f3a7317e7e1b1df4d3fc9d6f6ca0e6d65bf0))
+* **deps:** update rust crate clap-verbosity-flag to v3 ([2d0fefa](https://github.com/cailloumajor/config-api/commit/2d0fefa91da421c769e7ee1c2a5cc47e7ff5884d))
+* **deps:** update rust crate clap-verbosity-flag to v3 ([6bd67b2](https://github.com/cailloumajor/config-api/commit/6bd67b2063f6f0de9b14ff64a8d4d3da34349066))
+* **deps:** update rust crate futures-util to v0.3.31 ([#307](https://github.com/cailloumajor/config-api/issues/307)) ([e224fab](https://github.com/cailloumajor/config-api/commit/e224fab445810cffbaa26c72517c9709216e9705))
+* **deps:** update rust crate reqwest to v0.12.9 ([#296](https://github.com/cailloumajor/config-api/issues/296)) ([ffa17b7](https://github.com/cailloumajor/config-api/commit/ffa17b7b777770e795aaf52ba14c34fa4fa757c3))
+* **deps:** update rust crate tokio to v1.42.0 ([a709c16](https://github.com/cailloumajor/config-api/commit/a709c16dbe73eaf132f4a00236d876c0ba11de20))
+* **deps:** update rust crate tokio to v1.42.0 ([ea40b57](https://github.com/cailloumajor/config-api/commit/ea40b57c1ee2314771f24a48d953a7dcb992d0a5))
+* **deps:** update rust docker tag to v1.83.0 ([92a90f1](https://github.com/cailloumajor/config-api/commit/92a90f12e450dd10b4139073514daef1f6edc1c8))
+* **deps:** update rust docker tag to v1.83.0 ([b3f42e2](https://github.com/cailloumajor/config-api/commit/b3f42e23cd8955804ccb0b5551f16b10628a663e))
+* **deps:** update Rust version, edition and dependencies ([#322](https://github.com/cailloumajor/config-api/issues/322)) ([fccb5a0](https://github.com/cailloumajor/config-api/commit/fccb5a014bbb800249da05518cecc619fefe40cd))
+* **deps:** update tokio-tracing monorepo ([81183cb](https://github.com/cailloumajor/config-api/commit/81183cb95b4090e1c4018586633c30f93c6ea0d3))
+* **deps:** update tokio-tracing monorepo ([0eec958](https://github.com/cailloumajor/config-api/commit/0eec958abebafa745d2bef231204fbc1ac26d65d))
+* **deps:** update tonistiigi/xx docker tag to v1.6.1 ([659ab5f](https://github.com/cailloumajor/config-api/commit/659ab5fb5391bca55cbd7207e6f29fe6c464e8ce))
+* **deps:** update tonistiigi/xx docker tag to v1.6.1 ([edb9d67](https://github.com/cailloumajor/config-api/commit/edb9d6763a30b547e922d73967bd2b2d25174585))
+
 ## [2.4.4](https://github.com/cailloumajor/config-api/compare/v2.4.3...v2.4.4) (2024-09-28)
 
 
