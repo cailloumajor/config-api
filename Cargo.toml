@@ -3,7 +3,7 @@ name = "config-api"
 version = "2.4.4"
 description = "Configuration data HTTP API."
 authors = [ "Arnaud Rocher <arnaud.roche3@gmail.com>" ]
-edition = "2021"
+edition = "2024"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -11,24 +11,24 @@ edition = "2021"
 anyhow = "1.0"
 clap-verbosity-flag = { version = "3.0", features = [ "tracing" ] }
 futures-util = "0.3"
-mongodb = "2.7"
+mongodb = "3.2"
 reqwest = { version = "0.12", default-features = false }
 signal-hook = "0.3"
 signal-hook-tokio = { version = "0.3", features = [ "futures-v0_3" ] }
 tracing = "0.1"
 
 [dependencies.axum]
-version = "0.7"
+version = "0.8"
 default-features = false
 features = [ "http1", "json", "tokio" ]
 
 [dependencies.clap]
-version = "4.4"
+version = "4.5"
 default-features = false
 features = [ "std", "help", "usage", "error-context", "derive", "env" ]
 
 [dependencies.tokio]
-version = "1.33"
+version = "1.43"
 features = [ "io-util", "fs", "macros", "rt-multi-thread", "sync" ]
 
 [dependencies.tracing-log]
