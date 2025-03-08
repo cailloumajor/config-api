@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.6](https://github.com/cailloumajor/config-api/compare/v2.4.5...v2.4.6) (2025-03-08)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate tokio to v1.44.0 ([#321](https://github.com/cailloumajor/config-api/issues/321)) ([8576a87](https://github.com/cailloumajor/config-api/commit/8576a87d423e4bbfbd34028c339177c2fea17a49))
+
 ## [2.4.5](https://github.com/cailloumajor/config-api/compare/v2.4.4...v2.4.5) (2025-03-06)
 
 
