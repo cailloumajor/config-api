@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.4.6](https://github.com/cailloumajor/config-api/compare/v2.4.5...v2.4.6) (2025-03-24)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate tokio to v1.44.0 ([#321](https://github.com/cailloumajor/config-api/issues/321)) ([8576a87](https://github.com/cailloumajor/config-api/commit/8576a87d423e4bbfbd34028c339177c2fea17a49))
+* **deps:** update rust docker tag to v1.85.1 ([#327](https://github.com/cailloumajor/config-api/issues/327)) ([f2374f1](https://github.com/cailloumajor/config-api/commit/f2374f109a4223b70f6651305d13e5fd073ee3e3))
+
 ## [2.4.5](https://github.com/cailloumajor/config-api/compare/v2.4.4...v2.4.5) (2025-03-06)
 
 
