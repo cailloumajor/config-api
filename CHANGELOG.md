@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.4.6](https://github.com/cailloumajor/config-api/compare/v2.4.5...v2.4.6) (2025-08-14)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate mongodb to v3.2.4 ([a25892a](https://github.com/cailloumajor/config-api/commit/a25892aa24343a1b5a2782e568fefb9781576ecb))
+* **deps:** update rust crate tokio to v1.44.0 ([#321](https://github.com/cailloumajor/config-api/issues/321)) ([8576a87](https://github.com/cailloumajor/config-api/commit/8576a87d423e4bbfbd34028c339177c2fea17a49))
+* **deps:** update rust crate tokio to v1.45.0 ([#330](https://github.com/cailloumajor/config-api/issues/330)) ([9c3568e](https://github.com/cailloumajor/config-api/commit/9c3568e1809dc3a8c18bc1779c413285f4f7d15f))
+* **deps:** update rust crate tokio to v1.46.0 ([#331](https://github.com/cailloumajor/config-api/issues/331)) ([49eb7d3](https://github.com/cailloumajor/config-api/commit/49eb7d3d87d9628330d827665fbfac8d53aeac54))
+* **deps:** update rust crate tokio to v1.47.1 ([#335](https://github.com/cailloumajor/config-api/issues/335)) ([62f2303](https://github.com/cailloumajor/config-api/commit/62f2303d57bca8f99ad365d8918a400bb8af0a0e))
+* **deps:** update rust docker tag to v1.85.1 ([#327](https://github.com/cailloumajor/config-api/issues/327)) ([f2374f1](https://github.com/cailloumajor/config-api/commit/f2374f109a4223b70f6651305d13e5fd073ee3e3))
+* **deps:** update rust docker tag to v1.87.0 ([#329](https://github.com/cailloumajor/config-api/issues/329)) ([882b489](https://github.com/cailloumajor/config-api/commit/882b489ff021dd3b0a31bdd7db4381719705b3c4))
+* **deps:** update rust docker tag to v1.88.0 ([#333](https://github.com/cailloumajor/config-api/issues/333)) ([eab67bc](https://github.com/cailloumajor/config-api/commit/eab67bcfbf65ee05a95eb93f74b0175c4f294ca1))
+* **deps:** update rust docker tag to v1.89.0 ([#337](https://github.com/cailloumajor/config-api/issues/337)) ([86cac2b](https://github.com/cailloumajor/config-api/commit/86cac2bbe0f07023d2bdf9b99e4e9bfc7ab11ce0))
+
 ## [2.4.5](https://github.com/cailloumajor/config-api/compare/v2.4.4...v2.4.5) (2025-03-06)
 
 
