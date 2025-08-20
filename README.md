@@ -107,7 +107,7 @@ The changes will be applied if all the following conditions are met:
 
 ## Usage
 
-```ShellSession
+```console
 $ config-api --help
 Usage: config-api [OPTIONS] --mongodb-database <MONGODB_DATABASE>
 
@@ -124,4 +124,5 @@ Options:
           Decrease logging verbosity
   -h, --help
           Print help
+
 ```
