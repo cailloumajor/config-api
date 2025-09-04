@@ -6,7 +6,7 @@ use axum::http::StatusCode;
 use clap::Args;
 use futures_util::{TryFutureExt, TryStreamExt};
 use mongodb::Client;
-use mongodb::bson::{self, Bson, Document, doc};
+use mongodb::bson::{Bson, Document, doc};
 use mongodb::options::{ClientOptions, CountOptions, FindOptions};
 use tokio::task::JoinHandle;
 use tracing::{Instrument, debug, error, info, info_span, instrument, warn};
@@ -248,13 +248,7 @@ impl Database {
                         Ok(_) => {}
                     }
                     let update_filter = doc! { "_id": request.id };
-                    let update_document = match bson::to_document(&request.changes) {
-                        Ok(doc) => doc,
-                        Err(err) => {
-                            error!(kind = "encoding changes document", request.collection, %err);
-                            continue;
-                        }
-                    };
+                    let update_document = request.changes.into_iter().collect::<Document>();
                     let update = doc! { "$set": update_document };
                     if let Err(err) = collection.update_one(update_filter, update).await {
                         error!(kind = "document updating", request.collection, %err);
