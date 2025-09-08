@@ -11,7 +11,6 @@ edition = "2024"
 anyhow = "1.0"
 clap-verbosity-flag = { version = "3.0", features = [ "tracing" ] }
 futures-util = "0.3"
-mongodb = { version = "3.3", features = [ "bson-3" ] }
 reqwest = { version = "0.12", default-features = false }
 signal-hook = "0.3"
 signal-hook-tokio = { version = "0.3", features = [ "futures-v0_3" ] }
@@ -26,6 +25,11 @@ features = [ "http1", "json", "tokio" ]
 version = "4.5"
 default-features = false
 features = [ "std", "help", "usage", "error-context", "derive", "env" ]
+
+[dependencies.mongodb]
+version = "3.3"
+default-features = false
+features = [ "bson-3", "compat-3-3-0", "dns-resolver", "rustls-tls" ]
 
 [dependencies.tokio]
 version = "1.43"
