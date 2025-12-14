@@ -1,5 +1,30 @@
 # Changelog
 
+## [2.4.7](https://github.com/cailloumajor/config-api/compare/v2.4.6...v2.4.7) (2025-12-14)
+
+
+### Bug Fixes
+
+* **deps:** remove useless bson v2 indirect dependency ([a56b1f8](https://github.com/cailloumajor/config-api/commit/a56b1f8050baa23ded054df8e4db01bd86627d92))
+* **deps:** update base image to trixie ([855f006](https://github.com/cailloumajor/config-api/commit/855f00675f40d4481329061f0a91fa6b70a4300c))
+* **deps:** update rust crate mongodb to v3.3.0 ([c74c3e6](https://github.com/cailloumajor/config-api/commit/c74c3e6d2b35916166c31d2d6bde69bfe42aa14b))
+* **deps:** update rust crate reqwest to v0.12.23 ([aa8e3ef](https://github.com/cailloumajor/config-api/commit/aa8e3efe1801a484327641c13e03eef16d9f9e77))
+* **deps:** update rust crate reqwest to v0.12.23 ([4157c08](https://github.com/cailloumajor/config-api/commit/4157c08c5a28ce6a4381e3279ac3cefc3c1aaaf4))
+* **deps:** update rust crate reqwest to v0.12.23 ([d933113](https://github.com/cailloumajor/config-api/commit/d93311396ab69508b64a8565e7a8cf5fd80992d1))
+* **deps:** update rust crate reqwest to v0.12.23 ([3a13259](https://github.com/cailloumajor/config-api/commit/3a13259335259b3d2c17251ed5381ef7949b1466))
+* **deps:** update rust crate reqwest to v0.12.23 ([f4d43e0](https://github.com/cailloumajor/config-api/commit/f4d43e0a9ac00b681b76eea46ec59685337830a6))
+* **deps:** update rust crate reqwest to v0.12.23 ([f3ca9a6](https://github.com/cailloumajor/config-api/commit/f3ca9a6c98d2964b5796eb26c4b1ee7c1fb79f91))
+* **deps:** update rust crate tracing-subscriber to v0.3.20 ([6ac95b6](https://github.com/cailloumajor/config-api/commit/6ac95b6271201d4ba8e7a9d52b2fc092f006fc2b))
+* **deps:** update rust crate tracing-subscriber to v0.3.20 ([1f99221](https://github.com/cailloumajor/config-api/commit/1f99221fe7601475d32bab04f180affd83e07a26))
+* **deps:** update rust docker tag to v1.90.0 ([dc79023](https://github.com/cailloumajor/config-api/commit/dc79023a359cb8bf094d9bcf4f8f424a47a9a50b))
+* **deps:** update rust docker tag to v1.91.0 ([be27607](https://github.com/cailloumajor/config-api/commit/be27607cbb229653f5ec093eb715f6eebd7ad6e0))
+* **deps:** update rust docker tag to v1.91.1 ([e08a4d6](https://github.com/cailloumajor/config-api/commit/e08a4d665bc174530e964593a937b6783369e92b))
+* **deps:** update rust docker tag to v1.92.0 ([4aed254](https://github.com/cailloumajor/config-api/commit/4aed254e8294bb00e1fe9feabf669ed69e30d3ae))
+* **deps:** update tonistiigi/xx docker tag to v1.7.0 ([1de312f](https://github.com/cailloumajor/config-api/commit/1de312fbdeeb3881db45e0cc0106d7fa7fd04a73))
+* **deps:** update tonistiigi/xx docker tag to v1.8.0 ([97151f8](https://github.com/cailloumajor/config-api/commit/97151f874d448903b4098a0b3f39e754d4daaafd))
+* **deps:** update tonistiigi/xx docker tag to v1.9.0 ([7c6e414](https://github.com/cailloumajor/config-api/commit/7c6e414bc72a46f7f82d9dd97068626b1ed94007))
+* **deps:** use bson v3 ([ea17c78](https://github.com/cailloumajor/config-api/commit/ea17c7812e2c06434b28ca4072ce69b5acac05f0))
+
 ## [2.4.6](https://github.com/cailloumajor/config-api/compare/v2.4.5...v2.4.6) (2025-08-14)
 
 
