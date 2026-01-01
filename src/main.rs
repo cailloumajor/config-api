@@ -7,7 +7,6 @@ use signal_hook::low_level::signal_name;
 use signal_hook_tokio::Signals;
 use tokio::net::TcpListener;
 use tracing::{Instrument, error, info, info_span, instrument};
-use tracing_log::LogTracer;
 
 use config_api::CommonArgs;
 use db::Database;
@@ -25,7 +24,7 @@ struct Args {
     mongodb: db::Config,
 
     #[command(flatten)]
-    verbose: Verbosity<InfoLevel>,
+    verbosity: Verbosity<InfoLevel>,
 }
 
 #[instrument(skip_all)]
@@ -42,10 +41,8 @@ async fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
     tracing_subscriber::fmt()
-        .with_max_level(args.verbose.tracing_level())
+        .with_max_level(args.verbosity)
         .init();
-
-    LogTracer::init_with_filter(args.verbose.log_level_filter())?;
 
     let database = Database::create(&args.mongodb).await?;
     let (health_channel, health_task) = database.clone().handle_health();
