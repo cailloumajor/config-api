@@ -34,4 +34,4 @@ features = ["io-util", "fs", "macros", "rt-multi-thread", "sync"]
 
 [dev-dependencies]
 tower = { version = "0.5.2", default-features = false, features = ["util"] }
-trycmd = "0.15.11"
+trycmd = "1.0.0"
