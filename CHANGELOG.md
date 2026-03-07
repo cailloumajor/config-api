@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.4.9](https://github.com/cailloumajor/config-api/compare/v2.4.8...v2.4.9) (2026-03-07)
+
+
+### Bug Fixes
+
+* **deps:** update rust docker tag to v1.93.0 ([98b7fec](https://github.com/cailloumajor/config-api/commit/98b7feccd4ebfca7c65a2d51ac9a5a5d787bffef))
+* **deps:** update rust docker tag to v1.93.1 ([6cdcc83](https://github.com/cailloumajor/config-api/commit/6cdcc83cbb07c26910f3d8b5f1770f4b91ccd288))
+* **deps:** update rust docker tag to v1.94.0 ([d095627](https://github.com/cailloumajor/config-api/commit/d095627842c1ecd85f9e7b6b66d6a37a3386f65b))
+
 ## [2.4.8](https://github.com/cailloumajor/config-api/compare/v2.4.7...v2.4.8) (2026-01-01)
 
 
