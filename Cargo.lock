@@ -1259,9 +1259,9 @@ checksum = "224484c5d09285a7b8cb0a0c117e847ebd14cb6e4470ecf68cdb89c503b0edb9"
 
 [[package]]
 name = "mongodb"
-version = "3.5.1"
+version = "3.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "803dd859e8afa084c255a8effd8000ff86f7c8076a50cd6d8c99e8f3496f75c2"
+checksum = "50ed2c028a2c04ad58faa2e0f4ee82c1319f0e495b710ca8e8498fde4b395f64"
 dependencies = [
  "base64",
  "bitflags",
@@ -1305,9 +1305,9 @@ dependencies = [
 
 [[package]]
 name = "mongodb-internal-macros"
-version = "3.5.1"
+version = "3.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a973ef3dd3dbc6f6e65bbdecfd9ec5e781b9e7493b0f369a7c62e35d8e5ae2c8"
+checksum = "28a42ac35ea5c79f6539851d79d7cfe3322358f7d0d7bf040eb3e1558efc0a4c"
 dependencies = [
  "macro_magic",
  "proc-macro2",
@@ -2286,9 +2286,9 @@ dependencies = [
 
 [[package]]
 name = "tracing-subscriber"
-version = "0.3.23"
+version = "0.3.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cb7f578e5945fb242538965c2d0b04418d38ec25c79d160cd279bf0731c8d319"
+checksum = "2f30143827ddab0d256fd843b7a66d164e9f271cfa0dde49142c5ca0ca291f1e"
 dependencies = [
  "nu-ansi-term",
  "sharded-slab",
